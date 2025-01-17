@@ -66,8 +66,41 @@ ${previousTopics.map((s) => '- ' + s).join('\n')}
   return matches
 }
 
+export const askForNewspaper = async (issueNumber, topics) => {
+  const frontPagePrompt = `
+In the 22nd century, foxes are the playful superpowers. They unveil secrets of the world on a daily basis, through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes important discoveries through this way.
+
+Please help the foxes finish the issue! Remember that this is a whimsical world, so don't treat them as breaking news, everything is just regular ^ ^ Please make a front page introducing today's issue and then overviewing and outlining the contents (with pointers to the pages). Start with the header given below. Do not add another overall title (e.g. "Front Page: xxx" or "Today's Headlines: xxx"), but subtitles are allowed.
+
+Today's issue:
+- ${topics[0]} (Page 2)
+- ${topics[1]} (Page 3)
+- ${topics[2]} (Page 4)
+
+# **The Rolling Tails Gazette 🦊**
+*22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*
+  `.trim()
+
+  const [, frontPageText] = await requestLLM_DeepSeek3([
+    { role: 'user', content: frontPagePrompt },
+  ])
+
+  const [, innerPagesText] = await requestLLM_DeepSeek3([
+    { role: 'user', content: frontPagePrompt },
+    { role: 'assistant', content: frontPageText },
+    { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Please start each page with a first-level title; use subtitles if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page.` },
+  ])
+
+  const innerPagesSplit = innerPagesText.split(/^---\s*$/gm)
+    .map((s) => s.trim()).filter((s) => s !== '')
+  if (innerPagesSplit.length < 3) throw new Error('Malformed response from AI')
+
+  return [frontPageText, ...innerPagesSplit]
+}
+
 // ======== Test run ======== //
 if (import.meta.main) {
+if (0)
   console.log(await askForTopicSuggestions([
     "The ocean is just Earth's bathtub, and the tides are caused by a giant rubber duck.",
     "All world leaders communicate exclusively through interpretive dance.",
@@ -78,5 +111,11 @@ if (import.meta.main) {
     "Clouds are sheep in disguise, grazing on the sky.",
     "Ancient pyramids were actually giant cat scratching posts.",
     "Rainbows are bridges built by invisible snails to travel between colors.",
+  ]))
+
+  console.log(await askForNewspaper(103, [
+    'A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters."',
+    'The moon landing was actually filmed on Mars by a secret Martian film crew.',
+    'Fish are just underwater birds that forgot how to fly.',
   ]))
 }
