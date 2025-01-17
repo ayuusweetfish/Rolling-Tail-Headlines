@@ -66,7 +66,7 @@ ${previousTopics.map((s) => '- ' + s).join('\n')}
   return matches
 }
 
-export const askForNewspaper = async (issueNumber, topics) => {
+export const askForNewspaper = (issueNumber, topics) => {
   const frontPagePrompt = `
 In the 22nd century, foxes are the playful superpowers. They unveil secrets of the world on a daily basis, through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes important discoveries through this way.
 
@@ -81,21 +81,30 @@ Today's issue:
 *22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*
   `.trim()
 
-  const [, frontPageText] = await requestLLM_DeepSeek3([
-    { role: 'user', content: frontPagePrompt },
-  ])
+  let frontPageText
 
-  const [, innerPagesText] = await requestLLM_DeepSeek3([
-    { role: 'user', content: frontPagePrompt },
-    { role: 'assistant', content: frontPageText },
-    { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Please start each page with a first-level title; use subtitles if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page.` },
-  ])
+  const frontPage = async () => {
+    [, frontPageText] = await requestLLM_DeepSeek3([
+      { role: 'user', content: frontPagePrompt },
+    ])
+    return frontPageText
+  }
 
-  const innerPagesSplit = innerPagesText.split(/^---\s*$/gm)
-    .map((s) => s.trim()).filter((s) => s !== '')
-  if (innerPagesSplit.length < 3) throw new Error('Malformed response from AI')
+  const innerPages = async () => {
+    const [, innerPagesText] = await requestLLM_DeepSeek3([
+      { role: 'user', content: frontPagePrompt },
+      { role: 'assistant', content: frontPageText },
+      { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Please start each page with a first-level title; use subtitles if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page.` },
+    ])
 
-  return [frontPageText, ...innerPagesSplit]
+    const innerPagesSplit = innerPagesText.split(/^---\s*$/gm)
+      .map((s) => s.trim()).filter((s) => s !== '')
+    if (innerPagesSplit.length < 3) throw new Error('Malformed response from AI')
+
+    return innerPagesSplit
+  }
+
+  return { frontPage, innerPages }
 }
 
 // ======== Test run ======== //
@@ -113,9 +122,11 @@ if (0)
     "Rainbows are bridges built by invisible snails to travel between colors.",
   ]))
 
-  console.log(await askForNewspaper(103, [
+  const { frontPage, innerPages } = askForNewspaper(103, [
     'A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters."',
     'The moon landing was actually filmed on Mars by a secret Martian film crew.',
     'Fish are just underwater birds that forgot how to fly.',
-  ]))
+  ])
+  console.log(await frontPage())
+  console.log(await innerPages())
 }
