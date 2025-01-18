@@ -44,6 +44,14 @@ const requestLLM_DeepSeek3 = requestLLM_OpenAI(
   'https://api.deepseek.com/chat/completions', 'deepseek-chat', 1.6,
   Deno.env.get('API_KEY_DEEPSEEK') || prompt('API key (DeepSeek):')
 )
+const requestLLM_GLM4 = requestLLM_OpenAI(
+  'https://open.bigmodel.cn/api/paas/v4/chat/completions', 'glm-4-flash', 1.0,
+  Deno.env.get('API_KEY_ZHIPU') || prompt('API key (Zhipu):')
+)
+const requestLLM_Spark = requestLLM_OpenAI(
+  'https://spark-api-open.xf-yun.com/v1/chat/completions', 'generalv3.5', 1.6,
+  Deno.env.get('API_KEY_SPARK') || prompt('API key (Spark):')
+)
 
 // Application-specific routines
 
