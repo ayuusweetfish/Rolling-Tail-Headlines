@@ -22,7 +22,7 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages
     body: JSON.stringify({
       model: model,
       messages,
-      max_tokens: 10000,
+      max_tokens: 8000,
       temperature: temperature,
       stream: (isStreaming ? true : undefined),
     }),
@@ -63,7 +63,7 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages
     }
 
   } else {
-    const resp = await loggedFetchJSON(endpoint, isStreaming)
+    const resp = await loggedFetchJSON(endpoint, options)
     // Extract text
     if (!(resp.choices instanceof Array) ||
         resp.choices.length !== 1 ||

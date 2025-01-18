@@ -21,7 +21,21 @@ const createIssue = async (language) => {
   await db.newEmptyIssue(uuid, timestamp, language)
   await db.newTopics(uuid, topics)
 
-  return [uuid, topics]
+  const trimmedTopics = topics.map((t) => {
+    const nativeText = t[1]
+    if (language.startsWith('zh') || language === 'ja') {
+      return nativeText.substring(6)
+    } else {
+      let p = -2
+      for (let i = 0; i < 4; i++) {
+        p = nativeText.indexOf(' ', p + 1)
+        if (p === -1) return nativeText   // Does this really happen?? ^ ^
+      }
+      return nativeText.substring(0, p)
+    }
+  })
+
+  return [uuid, trimmedTopics]
 }
 
 // Serve requests
@@ -53,15 +67,15 @@ const serveReq = async (req) => {
   }
   if (req.method === 'POST' && url.pathname === '/start') {
     const language = 'en'
-    const [uuid, topics] = await createIssue(language)
-    return Response.json({ uuid, topics })
+    const [uuid, trimmedTopics] = await createIssue(language)
+    return Response.json({ uuid, topics: trimmedTopics })
   }
   if (req.method === 'POST' && url.pathname === '/flip') {
     const [issueUuid, selStr] = extractParams(await req.formData(), ['uuid', 'sel'])
     const sel = parseInt(selStr)
     if (!(sel >= 0 && sel < 6)) throw new ErrorHttpCoded(400, 'Invalid `sel`')
 
-    const topics = await db.topicsForIssue(issueUuid) // [[id, non-empty]; 6]
+    const topics = await db.topicsForIssue(issueUuid) // [[id, selected]; 6]
     if (!topics || topics.length < 6) throw new ErrorHttpCoded(404, 'Issue not found')
     if (topics[sel][1]) throw new ErrorHttpCoded(400, 'Topic already selected')
     if (topics[sel ^ 1][1]) throw new ErrorHttpCoded(400, 'Sibling topic already selected')
@@ -70,10 +84,23 @@ const serveReq = async (req) => {
     if (topics.reduce((a, b) => a + b[1], 0) + 1 === 3) {
       // All topics selected. Make the newspaper!
       const selTopics = await db.selectedTopicsForIssue(issueUuid)
-      console.log(selTopics)
+      const newspaper = await llm.askForNewspaper(104, selTopics)
+      const stream = new ReadableStream({
+        async pull(controller) {
+          const { value: chunk, done } = await newspaper.next()
+          console.log(chunk)
+          if (done) controller.close()
+          else controller.enqueue(new TextEncoder().encode(chunk))
+        },
+        async cancel(reason) {
+          await newspaper.return()  // Abort generator
+        },
+      })
+      return new Response(stream)
+    } else {
+      // Just reply OK
+      return new Response('OK')
     }
-
-    return new Response('ok')
   }
   return new Response('Void space, please return', { status: 404 })
 }
@@ -85,6 +112,7 @@ const serveReqWrapped = async (req) => {
     if (e instanceof ErrorHttpCoded) {
       return new Response(e.message, { status: e.status })
     } else {
+      console.log(e)
       return new Response('Internal server error: ' +
         (e instanceof Error) ? e.message : e.toString(), { status: 500 })
     }

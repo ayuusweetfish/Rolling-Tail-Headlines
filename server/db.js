@@ -44,6 +44,7 @@ export const newTopics = async (issue_uuid, topics) => {
   }
 }
 
+// [[id, selected]; 6]
 export const topicsForIssue = async (issue_uuid) => {
   // XXX: Cannot condense?
   const values =
@@ -56,6 +57,7 @@ export const markTopicAsSelected = async (topic_id) => {
   stmt(`UPDATE topics SET image = '+' WHERE rowid = ?`).run(topic_id)
 }
 
+// [native text; 3]
 export const selectedTopicsForIssue = async (issue_uuid) => {
   const values =
     stmt(`SELECT text_native FROM topics WHERE issue_uuid = ? AND image IS NOT NULL
