@@ -53,8 +53,19 @@ export const topicsForIssue = async (issue_uuid) => {
   return values
 }
 
+export const getTopicEnglishText = async (topic_id) => {
+  const value =
+    stmt(`SELECT text_english FROM topics WHERE rowid = ?`)
+      .value(topic_id)
+  return value
+}
+
 export const markTopicAsSelected = async (topic_id) => {
   stmt(`UPDATE topics SET image = '+' WHERE rowid = ?`).run(topic_id)
+}
+
+export const setTopicImage = async (topic_id, image) => {
+  stmt(`UPDATE topics SET image = ? WHERE rowid = ?`).run(image, topic_id)
 }
 
 // [native text; 3]

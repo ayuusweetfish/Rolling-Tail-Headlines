@@ -79,7 +79,16 @@ const serveReq = async (req) => {
     if (!topics || topics.length < 6) throw new ErrorHttpCoded(404, 'Issue not found')
     if (topics[sel][1]) throw new ErrorHttpCoded(400, 'Topic already selected')
     if (topics[sel ^ 1][1]) throw new ErrorHttpCoded(400, 'Sibling topic already selected')
-    await db.markTopicAsSelected(topics[sel][0])
+
+    const selTopicId = topics[sel][0]
+    await db.markTopicAsSelected(selTopicId)
+
+    // Spawn the image generation task to run in background
+    const selTopicText = await db.getTopicEnglishText(selTopicId)
+    ;(async () => {
+      const image = await llm.generateImage(selTopicText)
+      await db.setTopicImage(selTopicId, image)
+    })()
 
     if (topics.reduce((a, b) => a + b[1], 0) + 1 === 3) {
       // All topics selected. Make the newspaper!

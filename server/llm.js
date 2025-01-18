@@ -186,6 +186,41 @@ Today's issue:
   }
 }
 
+export const generateImage = async (topic) => {
+  const [, text] = await requestLLM_Spark([
+    { role: 'user', content: `
+小狐正在为幻想世界报纸《九尾日报》（The Rolling Tails Gazette）的新闻报道文章制作一张小插图。根据报道标题，可以帮小狐描述一下你会怎样设计图像吗？可以尽情发挥创意，但也记得简洁一些，只需描述图像即可，不必介绍过多象征意义。另外，在不影响画面主题表现的前提下，请尽量减少画面中的内容，甚至也可以省略一些要素，保持图像与文章内容基本有关即可。谢谢~
+
+例：A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters".
+黑白简笔画卡通平涂风格，线条流畅、圆润、简洁，有手绘风格。画面中，一位穿着简单的人类角色，头戴一顶小帽子，身上系着多个小铃铛，正在森林中行走。周围有几只小动物，如兔子、松鼠和小鸟，好奇地围着他。背景为简单的树木和草地轮廓，使用粗线条和大色块，可加入灰色阴影，使整张图简洁、可爱。小尺寸阅览友好。
+
+例：Fish are just underwater birds that forgot how to fly.
+黑白简笔画卡通平涂风格，线条流畅、圆润、简洁，有手绘风格。画面中，一条鱼和一只鸟并排站立，鱼的尾巴和鸟的翅膀相似，鱼的眼神充满好奇，鸟则显得轻松自在。背景简洁，仅用灰色阴影勾勒出水面和天空的分界线。整张图简单、可爱，适合小尺寸阅览。
+
+报道标题：${topic}
+      `.trim() }
+  ])
+
+  const textFiltered = text.replaceAll('主席台', '讲台')
+  const key = Deno.env.get('API_KEY_ZHIPU') || prompt('API key (Zhipu):')
+  const imageResponse = await loggedFetchJSON('https://open.bigmodel.cn/api/paas/v4/images/generations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + key,
+    },
+    body: JSON.stringify({
+      model: 'cogview-3-flash',
+      prompt: text,
+      size: '1024x1024',
+    }),
+  })
+
+  const url = imageResponse.data[0].url
+  const imageBlob = await (await fetch(url)).blob()
+  return new Uint8Array(await imageBlob.arrayBuffer())
+}
+
 // ======== Test run ======== //
 if (import.meta.main) {
 if (0)
