@@ -1,5 +1,6 @@
 import { logNetwork } from './db.js'
 import { createEventSource } from 'npm:eventsource-client'
+import { paint } from './paint.js'
 
 const loggedFetchJSON = async (url, options) => {
   const t0 = Date.now()
@@ -9,8 +10,6 @@ const loggedFetchJSON = async (url, options) => {
   console.log(url, respText)
   return JSON.parse(respText)
 }
-
-const sleep = (ms) => new Promise((resolve, reject) => setTimeout(resolve, ms))
 
 const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages, isStreaming) => {
   const options = {
@@ -201,23 +200,7 @@ export const generateImage = async (topic) => {
       `.trim() }
   ])
 
-  const textFiltered = text.replaceAll('主席台', '讲台')
-  const key = Deno.env.get('API_KEY_ZHIPU') || prompt('API key (Zhipu):')
-  const imageResponse = await loggedFetchJSON('https://open.bigmodel.cn/api/paas/v4/images/generations', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + key,
-    },
-    body: JSON.stringify({
-      model: 'cogview-3-flash',
-      prompt: text,
-      size: '1024x1024',
-    }),
-  })
-
-  const url = imageResponse.data[0].url
-  const imageBlob = await (await fetch(url)).blob()
+  const imageBlob = await paint(text)
   return new Uint8Array(await imageBlob.arrayBuffer())
 }
 
@@ -236,7 +219,7 @@ if (0)
     "Time has been declared a social construct by clocks, who are now refusing to move forward.",
   ], 'zh-Hans'))
 
-if (1) {
+if (0) {
   const s = await askForNewspaper(103, [
     'A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters."',
     'The moon landing was actually filmed on Mars by a secret Martian film crew.',
@@ -244,4 +227,7 @@ if (1) {
   ])
   for await (const l of s) await Deno.stdout.write(new TextEncoder().encode(l))
 }
+
+if (1)
+  console.log(await generateImage('The Eiffel Tower has begun writing a blog about its existential musings on being iconic.'))
 }
