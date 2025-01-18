@@ -48,12 +48,14 @@ const requestLLM_DeepSeek3 = requestLLM_OpenAI(
 // Application-specific routines
 
 const englishLanguageName = {
+  'en': 'English',
   'zh-Hans': 'Simplified Chinese',
   'zh-Hant': 'Traditional Chinese',
   'ja': 'Japanese',
   'fr': 'French',
 }
 
+// Returns: [[English text, native text]; 6]
 export const askForTopicSuggestions = async (previousTopics, language) => {
   const [_, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `

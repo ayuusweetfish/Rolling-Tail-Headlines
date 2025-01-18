@@ -2,27 +2,59 @@ import { Database } from 'jsr:@db/sqlite@0.12'
 
 const db = new Database('fox.db')
 
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS past_issues (
-    timestamp INTEGER,
-    topics TEXT,
-    language TEXT,
-    pages TEXT
-  )
-`).run()
+const cachedStmts = {}
+const stmt = (s) => (cachedStmts[s] || (cachedStmts[s] = db.prepare(s)))
+const run = (s, ...a) => stmt(s).run(...a)
 
-db.prepare(`
+// Data models
+
+;`
+  CREATE TABLE IF NOT EXISTS issues (
+    uuid TEXT NOT NULL PRIMARY KEY,
+    timestamp INTEGER NOT NULL,
+    language TEXT NOT NULL
+  ) WITHOUT ROWID;
+
+  CREATE TABLE IF NOT EXISTS topics (
+    issue_uuid TEXT NOT NULL,
+    text_english TEXT NOT NULL,
+    text_native TEXT NOT NULL,
+    image BLOB,
+    FOREIGN KEY (issue_uuid) REFERENCES issues (uuid)
+  );
+
+  CREATE TABLE IF NOT EXISTS published_issues (
+    issue_num INTEGER PRIMARY KEY,
+    issue_uuid TEXT NOT NULL,
+    pages_content TEXT NOT NULL,
+    FOREIGN KEY (issue_uuid) REFERENCES issues (uuid)
+  );
+`.split(/;\n\n+/).map((s) => db.prepare(s).run())
+
+export const newEmptyIssue = async (uuid, timestamp, language) => {
+  stmt(`INSERT INTO issues (uuid, timestamp, language) VALUES (?, ?, ?)`)
+    .run(uuid, timestamp, language)
+}
+
+export const newTopics = async (issue_uuid, topics) => {
+  for (const [text_english, text_native] of topics) {
+    stmt(`INSERT INTO topics (issue_uuid, text_english, text_native)
+          VALUES (?, ?, ?)`)
+      .run(issue_uuid, text_english, text_native)
+  }
+}
+
+// Logging
+
+;`
   CREATE TABLE IF NOT EXISTS network (
     url TEXT,
     payload TEXT,
     response TEXT,
     time INTEGER
-  )
-`).run()
-
-const stmtLogNetwork = db.prepare(`
-  INSERT INTO network VALUES (?, ?, ?, ?)
-`)
+  );
+`.split(/;\n\n+/).map((s) => db.prepare(s).run())
 export const logNetwork = async (url, payload, response, time) => {
-  stmtLogNetwork.run(url, payload, response, time)
+  stmt(`INSERT INTO network VALUES (?, ?, ?, ?)`)
+    .run(url, payload, response, time)
 }
