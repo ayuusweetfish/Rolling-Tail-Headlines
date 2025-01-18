@@ -68,7 +68,9 @@ const serveReq = async (req) => {
     await db.markTopicAsSelected(topics[sel][0])
 
     if (topics.reduce((a, b) => a + b[1], 0) + 1 === 3) {
-      console.log('Finish!')
+      // All topics selected. Make the newspaper!
+      const selTopics = await db.selectedTopicsForIssue(issueUuid)
+      console.log(selTopics)
     }
 
     return new Response('ok')

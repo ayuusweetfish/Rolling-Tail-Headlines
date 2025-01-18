@@ -56,6 +56,14 @@ export const markTopicAsSelected = async (topic_id) => {
   stmt(`UPDATE topics SET image = '+' WHERE rowid = ?`).run(topic_id)
 }
 
+export const selectedTopicsForIssue = async (issue_uuid) => {
+  const values =
+    stmt(`SELECT text_native FROM topics WHERE issue_uuid = ? AND image IS NOT NULL
+          ORDER BY rowid ASC`)
+      .values(issue_uuid)
+  return values.map((rowFields) => rowFields[0])
+}
+
 // Logging
 
 ;`

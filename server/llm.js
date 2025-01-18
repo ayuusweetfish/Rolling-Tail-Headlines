@@ -1,4 +1,5 @@
 import { logNetwork } from './db.js'
+import { createEventSource } from 'npm:eventsource-client'
 
 const loggedFetchJSON = async (url, options) => {
   const t0 = Date.now()
@@ -9,35 +10,60 @@ const loggedFetchJSON = async (url, options) => {
   return JSON.parse(respText)
 }
 
-const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages) => {
-  const resp = await loggedFetchJSON(
-    endpoint,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + key,
-      },
-      body: JSON.stringify({
-        model: model,
-        messages,
-        max_tokens: 5000,
-        temperature: temperature,
-      }),
+const sleep = (ms) => new Promise((resolve, reject) => setTimeout(resolve, ms))
+
+const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages, isStreaming) => {
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + key,
+    },
+    body: JSON.stringify({
+      model: model,
+      messages,
+      max_tokens: 5000,
+      temperature: temperature,
+      stream: (isStreaming ? true : undefined),
+    }),
+  }
+
+  if (isStreaming) {
+    const es = createEventSource({ url: endpoint, ...options })
+    let buffer = ''
+
+    return {
+      [Symbol.asyncIterator]: async function* () {
+        for await (const chunk of es) {
+          if (chunk.data === '[DONE]') break
+          const payload = JSON.parse(chunk.data)
+
+          buffer += payload.choices[0].delta.content
+          const i = buffer.lastIndexOf('\n')
+          if (i !== -1) {
+            yield buffer.substring(0, i + 1)
+            buffer = buffer.substring(i + 1)
+          }
+        }
+
+        if (buffer) yield buffer
+        es.close()
+      }
     }
-  )
 
-  // Extract text
-  if (!(resp.choices instanceof Array) ||
-      resp.choices.length !== 1 ||
-      typeof resp.choices[0] !== 'object' ||
-      typeof resp.choices[0].message !== 'object' ||
-      resp.choices[0].message.role !== 'assistant' ||
-      typeof resp.choices[0].message.content !== 'string')
-    throw new Error('Incorrect schema!')
-  const text = resp.choices[0].message.content
-
-  return [resp, text]
+  } else {
+    const resp = await loggedFetchJSON(endpoint, isStreaming)
+    // Extract text
+    if (!(resp.choices instanceof Array) ||
+        resp.choices.length !== 1 ||
+        typeof resp.choices[0] !== 'object' ||
+        typeof resp.choices[0].message !== 'object' ||
+        resp.choices[0].message.role !== 'assistant' ||
+        typeof resp.choices[0].message.content !== 'string')
+      throw new Error('Incorrect schema from AI')
+    const text = resp.choices[0].message.content
+    return [resp, text]
+  }
 }
 
 const requestLLM_DeepSeek3 = requestLLM_OpenAI(
@@ -65,7 +91,7 @@ const englishLanguageName = {
 
 // Returns: [[English text, native text]; 6]
 export const askForTopicSuggestions = async (previousTopics, language) => {
-  const [_, text] = await requestLLM_DeepSeek3([
+  const [_, text] = await requestLLM_Spark([
     { role: 'user', content: `
 In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis and report on discoveries, social activities, and political/economical events through Fox Newroll Network (FoxNN).
 
@@ -88,7 +114,7 @@ ${previousTopics.map((s) => '- ' + s).join('\n')}
   }
 }
 
-export const askForNewspaper = (issueNumber, topics) => {
+export const askForNewspaper = async (issueNumber, topics) => {
   const frontPagePrompt = `
 In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes reports obtained this way.
 
@@ -105,15 +131,12 @@ Today's issue:
 
   let frontPageText
 
-  const frontPage = async () => {
-    [, frontPageText] = await requestLLM_DeepSeek3([
-      { role: 'user', content: frontPagePrompt },
-    ])
-    return frontPageText
-  }
+  return await requestLLM_Spark([
+    { role: 'user', content: frontPagePrompt },
+  ], true)
 
   const innerPages = async () => {
-    const [, innerPagesText] = await requestLLM_DeepSeek3([
+    const [, innerPagesText] = await requestLLM_Spark([
       { role: 'user', content: frontPagePrompt },
       { role: 'assistant', content: frontPageText },
       { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Please start each page with a first-level title; use subtitles if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page.` },
@@ -125,13 +148,11 @@ Today's issue:
 
     return innerPagesSplit
   }
-
-  return { frontPage, innerPages }
 }
 
 // ======== Test run ======== //
 if (import.meta.main) {
-if (1)
+if (0)
   console.log(await askForTopicSuggestions([
     "Rain is just the sky crying because it’s jealous of how much fun the ocean is having.",
     "Trees are secretly telepathic and gossip about humans during photosynthesis.",
@@ -144,13 +165,12 @@ if (1)
     "Time has been declared a social construct by clocks, who are now refusing to move forward.",
   ], 'zh-Hans'))
 
-if (0) {
-  const { frontPage, innerPages } = askForNewspaper(103, [
+if (1) {
+  const s = await askForNewspaper(103, [
     'A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters."',
     'The moon landing was actually filmed on Mars by a secret Martian film crew.',
     'Fish are just underwater birds that forgot how to fly.',
   ])
-  console.log(await frontPage())
-  console.log(await innerPages())
+  for await (const l of s) await Deno.stdout.write(new TextEncoder().encode(l))
 }
 }
