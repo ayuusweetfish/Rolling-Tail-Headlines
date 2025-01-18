@@ -5,17 +5,30 @@ const createIssue = async (language) => {
   const timestamp = Date.now()
   const uuid = crypto.randomUUID()
 
-  const previousTopics = [
-    "Rain is just the sky crying because it’s jealous of how much fun the ocean is having.",
-    "Trees are secretly telepathic and gossip about humans during photosynthesis.",
-    "Clouds are actually sentient beings hosting weekly tea parties with migrating birds",
-    "The Ministry of Silly Walks has been disbanded after the flamingo workforce went on strike for better worm benefits.",
-    'A new political party, the "Party of Infinite Naps," wins the election by promising mandatory siestas for all citizens.',
-    "The moon has been caught hosting late-night karaoke sessions with passing comets.",
-    "The sun has started wearing sunglasses to protect itself from the brightness of Earth's cities.",
-    "Scientists accidentally create a black hole that only absorbs bad vibes, leaving everyone inexplicably cheerful.",
-    "Time has been declared a social construct by clocks, who are now refusing to move forward.",
-  ]
+  const shuffle = (a) => {
+    for (let i = a.length - 1; i >= 1; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[a[i], a[j]] = [a[j], a[i]]
+    }
+  }
+
+  const previousTopics = await db.recentAndPastTopics(2, 6)
+  if (previousTopics.length < 12) {
+    const seedingTopics = [
+      "Rain is just the sky crying because it’s jealous of how much fun the ocean is having.",
+      "Trees are secretly telepathic and gossip about humans during photosynthesis.",
+      "Clouds are actually sentient beings hosting weekly tea parties with migrating birds",
+      "The Ministry of Silly Walks has been disbanded after the flamingo workforce went on strike for better worm benefits.",
+      'A new political party, the "Party of Infinite Naps," wins the election by promising mandatory siestas for all citizens.',
+      "The moon has been caught hosting late-night karaoke sessions with passing comets.",
+      "The sun has started wearing sunglasses to protect itself from the brightness of Earth's cities.",
+      "Scientists accidentally create a black hole that only absorbs bad vibes, leaving everyone inexplicably cheerful.",
+      "Time has been declared a social construct by clocks, who are now refusing to move forward.",
+    ]
+    shuffle(seedingTopics)
+    previousTopics.push(...seedingTopics.slice(0, 12 - previousTopics.length))
+  }
+  shuffle(previousTopics)
   const topics = await llm.askForTopicSuggestions(previousTopics, 'en')
 
   await db.newEmptyIssue(uuid, timestamp, language)

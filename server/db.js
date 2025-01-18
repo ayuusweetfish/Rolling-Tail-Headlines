@@ -77,6 +77,43 @@ export const selectedTopicsForIssue = async (issue_uuid) => {
   return values.map((rowFields) => rowFields[0])
 }
 
+// Returns `recent_issues` * 3 + `past_issues` topics (may be less if bootstrapping)
+export const recentAndPastTopics = async (recent_issues, past_issues) => {
+  const last_issue =
+    stmt(`SELECT MAX(issue_num) FROM published_issues`).value() || 0
+
+  // Topics from the most recent issues
+  const recent_issues_topics =
+    stmt(`SELECT text_english FROM topics
+          JOIN published_issues ON topics.issue_uuid = published_issues.issue_uuid
+          WHERE issue_num >= ? AND image IS NOT NULL`)
+      .values(last_issue - recent_issues + 1)
+      .map((rowFields) => rowFields[0])
+
+  // Topics from further past issues
+  // Sample without replacement, total = `last_issue` - `recent_issues`, take = `past_issues`,
+  // with Floyd's algorithm described in "Programming pearls: a sample of brilliance".
+  // wren-lang/wren#716 ^ ^
+  const N = last_issue - recent_issues
+  const past_issues_nums = []
+  const past_issues_nums_map = {}
+  for (let i = Math.max(0, N - past_issues); i < N; i++) {
+    let x = Math.floor(Math.random() * (i + 1))
+    if (past_issues_nums_map[x]) x = i
+    past_issues_nums.push(x)
+    past_issues_nums_map[x] = true
+  }
+  const past_issues_topics = past_issues_nums.map((n) =>
+    stmt(`SELECT text_english FROM topics
+          JOIN published_issues ON topics.issue_uuid = published_issues.issue_uuid
+          WHERE issue_num = ? AND image IS NOT NULL
+          ORDER BY RANDOM() LIMIT 1`)
+      .value(n + 1)[0]
+  )
+
+  return [...past_issues_topics, ...recent_issues_topics]
+}
+
 export const reserveIssueNumber = async (issue_uuid) => {
   const value =
     stmt(`INSERT INTO published_issues (issue_uuid, pages_content) VALUES (?, '') RETURNING issue_num`)
