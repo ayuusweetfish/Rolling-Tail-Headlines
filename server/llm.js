@@ -47,28 +47,40 @@ const requestLLM_DeepSeek3 = requestLLM_OpenAI(
 
 // Application-specific routines
 
-export const askForTopicSuggestions = async (previousTopics) => {
+const englishLanguageName = {
+  'zh-Hans': 'Simplified Chinese',
+  'zh-Hant': 'Traditional Chinese',
+  'ja': 'Japanese',
+  'fr': 'French',
+}
+
+export const askForTopicSuggestions = async (previousTopics, language) => {
   const [_, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `
-In the 22nd century, foxes are the playful superpowers. They unveil secrets of the world on a daily basis, through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes important discoveries through this way.
+In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis and report on discoveries, social activities, and political/economical events through Fox Newroll Network (FoxNN).
 
-What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; for discoveries, there is no need to include its source (the discoverer, the source material, etc.). Let your imagination go wild ^ ^ Be as nonsensical as possible, but keep in mind to keep the concepts somehow related (just in an unexpected way). Reply only with the sentences in a Markdown list.
+What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; omit the source ("scientists", "FoxNN", "document", etc.), simply describe the core topic. Let your imagination go wild ^ ^ Be as nonsensical as possible, but keep in mind to keep the concepts somehow related (just in an unexpected way). Also, try to be diverse in the topic and do not get fox-centric. Reply with the sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${englishLanguageName[language]}** first, and then translate accurately into English.`}
 
 Past issues included the following topics:
 ${previousTopics.map((s) => '- ' + s).join('\n')}
-      `.trim() },
+      `.trim() }
   ])
 
-  const matches = [...text.matchAll(/^(?:-|[0-9]+\.)(.+)$/gm)]
+  const matches = [...text.matchAll(/^\s*(?:[-*]|[0-9]+\.)\s(.+)$/gm)]
     .map((s) => s[1].trim()).filter((s) => s !== '')
-  if (matches.length !== 6) throw new Error('Malformed response from AI')
 
-  return matches
+  if (language === 'en') {
+    if (matches.length !== 6) throw new Error('Malformed response from AI')
+    return matches.map((s) => [s, s])
+  } else {
+    if (matches.length !== 12) throw new Error('Malformed response from AI')
+    return matches.slice(0, 6).map((s, i) => [matches[i + 6], s])
+  }
 }
 
 export const askForNewspaper = (issueNumber, topics) => {
   const frontPagePrompt = `
-In the 22nd century, foxes are the playful superpowers. They unveil secrets of the world on a daily basis, through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes important discoveries through this way.
+In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes reports obtained this way.
 
 Please help the foxes finish the issue! Remember that this is a whimsical world, so don't treat them as breaking news, everything is just regular ^ ^ Please make a front page introducing today's issue and then overviewing and outlining the contents (with pointers to the pages). Start with the header given below. Do not add another overall title (e.g. "Front Page: xxx" or "Today's Headlines: xxx"), but subtitles are allowed.
 
@@ -109,19 +121,20 @@ Today's issue:
 
 // ======== Test run ======== //
 if (import.meta.main) {
-if (0)
+if (1)
   console.log(await askForTopicSuggestions([
-    "The ocean is just Earth's bathtub, and the tides are caused by a giant rubber duck.",
-    "All world leaders communicate exclusively through interpretive dance.",
-    "The Earth is flat because it’s actually a giant pizza, and the crust is holding everything together.",
     "Rain is just the sky crying because it’s jealous of how much fun the ocean is having.",
-    "Stonehenge was actually a prehistoric dance floor for giant rock creatures.",
     "Trees are secretly telepathic and gossip about humans during photosynthesis.",
-    "Clouds are sheep in disguise, grazing on the sky.",
-    "Ancient pyramids were actually giant cat scratching posts.",
-    "Rainbows are bridges built by invisible snails to travel between colors.",
-  ]))
+    "Clouds are actually sentient beings hosting weekly tea parties with migrating birds",
+    "The Ministry of Silly Walks has been disbanded after the flamingo workforce went on strike for better worm benefits.",
+    'A new political party, the "Party of Infinite Naps," wins the election by promising mandatory siestas for all citizens.',
+    "The moon has been caught hosting late-night karaoke sessions with passing comets.",
+    "The sun has started wearing sunglasses to protect itself from the brightness of Earth's cities.",
+    "Scientists accidentally create a black hole that only absorbs bad vibes, leaving everyone inexplicably cheerful.",
+    "Time has been declared a social construct by clocks, who are now refusing to move forward.",
+  ], 'zh-Hans'))
 
+if (0) {
   const { frontPage, innerPages } = askForNewspaper(103, [
     'A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters."',
     'The moon landing was actually filmed on Mars by a secret Martian film crew.',
@@ -129,4 +142,5 @@ if (0)
   ])
   console.log(await frontPage())
   console.log(await innerPages())
+}
 }
