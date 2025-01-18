@@ -22,7 +22,7 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages
     body: JSON.stringify({
       model: model,
       messages,
-      max_tokens: 5000,
+      max_tokens: 10000,
       temperature: temperature,
       stream: (isStreaming ? true : undefined),
     }),
@@ -40,18 +40,24 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages
         for await (const chunk of es) {
           bufferCombined.push(chunk.data)
           if (chunk.data === '[DONE]') break
-          const payload = JSON.parse(chunk.data)
-
-          buffer += payload.choices[0].delta.content
-          const i = buffer.lastIndexOf('\n')
-          if (i !== -1) {
-            yield buffer.substring(0, i + 1)
-            buffer = buffer.substring(i + 1)
+          try {
+            const payload = JSON.parse(chunk.data)
+            const s = payload.choices[0].delta.content
+            // Ensure horizontal rules are not broken
+            // There are better ways to return other parts early,
+            // but benefit is negligible latency at one point in time. So ignore that.
+            if (s.match(/-[^\S\r\n]*$/)) buffer += s
+            else {
+              yield buffer + s
+              buffer = ''
+            }
+          } catch (e) {
+            break
           }
         }
 
-        if (buffer) yield buffer
         es.close()
+        if (buffer) yield buffer
         await logNetwork(endpoint, options.body, bufferCombined.join('\n'), Date.now() - t0)
       }
     }
@@ -143,15 +149,40 @@ Today's issue:
     frontPageTextChunks.push(s)
   }
 
+  yield '\n\n~~++ page separator ++~~\n\n'
+
   const frontPageText = frontPageTextChunks.join('')
 
   const innerPagesStream = await requestLLM_Spark([
     { role: 'user', content: frontPagePrompt },
     { role: 'assistant', content: frontPageText },
-    { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Please start each page with a first-level title; use subtitles if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page.` },
+    { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Please start each page with a first-level title; use subtitles along the way if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page. Start at page 2; do not repeat the front page.` },
   ], true)
+
+  // Replace the first two horizontal rules with page separators
+  // Consecutive rules without non-empty content in between are condensed
+  // Prerequisite: horizontal rules are not broken across chunks
+  // (handled by the stream-reading subroutine)
+  let sepCount = 0
+  let hasNonEmpty = false   // Has non-empty content since last separator?
   for await (const s of innerPagesStream) {
-    yield s
+    let p = 0
+    const sReplaced = s.replace(/^---+[^\S\r\n]*$/gm, (match, offset) => {
+      let ret = match
+      const end = offset + match.length
+      if (!hasNonEmpty && s.substring(p, offset).match(/\S/)) hasNonEmpty = true
+      if (sepCount < 2 && hasNonEmpty) {
+        sepCount++
+        ret = '~~++ page separator ++~~'
+      } else if (!hasNonEmpty) {
+        ret = ''
+      }
+      p = end
+      hasNonEmpty = false
+      return ret
+    })
+    if (!hasNonEmpty && s.substring(p).match(/\S/)) hasNonEmpty = true
+    yield sReplaced
   }
 }
 
