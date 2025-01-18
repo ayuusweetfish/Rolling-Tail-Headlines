@@ -29,12 +29,16 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages
   }
 
   if (isStreaming) {
+    const t0 = Date.now()
     const es = createEventSource({ url: endpoint, ...options })
     let buffer = ''
 
     return {
       [Symbol.asyncIterator]: async function* () {
+        const bufferCombined = []
+
         for await (const chunk of es) {
+          bufferCombined.push(chunk.data)
           if (chunk.data === '[DONE]') break
           const payload = JSON.parse(chunk.data)
 
@@ -48,6 +52,7 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages
 
         if (buffer) yield buffer
         es.close()
+        await logNetwork(endpoint, options.body, bufferCombined.join('\n'), Date.now() - t0)
       }
     }
 
@@ -128,6 +133,7 @@ Today's issue:
 # **The Rolling Tails Gazette 🦊**
 *22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*
   `.trim()
+    .substring(0, 0) + 'Hello!'
 
   let frontPageText
 
