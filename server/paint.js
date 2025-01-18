@@ -33,43 +33,35 @@ const paint_CogView3Flash = async (text) => {
   return await (await fetch(url)).blob()
 }
 
-// const paint_provider = paint_CogView3Flash
-const paint_provider = async (text) => {
-  await new Promise((resolve, reject) => setTimeout(resolve, 2000))
-  return text.toUpperCase()
-}
+const paint_provider = paint_CogView3Flash
+const paintConcurrency = 2
 
 const queue = []  // [[text, resolve, reject]; N]
 let inProgressCount = 0
 
 const arrange = () => {
-  while (inProgressCount < 2 && queue.length > 0) {
+  // Defer async function execution, in case of theoretically possible infinite recursion
+  const sentToWork = []
+
+  while (inProgressCount < paintConcurrency && queue.length > 0) {
     const [text, resolve, reject] = queue.shift()
     inProgressCount++
-    console.log('arrange', text, inProgressCount)
-    ;(async () => {
+    sentToWork.push(async () => {
       try {
         const result = await paint_provider(text)
-        console.log('resolve', text, result)
         resolve(result)
       } catch (e) {
         reject(e)
       }
       inProgressCount--
       arrange()
-    })()
+    })
   }
+
+  for (const f of sentToWork) f()
 }
 
 export const paint = (text) => new Promise((resolve, reject) => {
   queue.push([text, resolve, reject])
   arrange()
 })
-
-console.log(await Promise.all([
-  paint('aaa'),
-  paint('bbb'),
-  paint('ccc'),
-  paint('ddd'),
-  (async () => { await new Promise((resolve, reject) => setTimeout(resolve, 3000)); return await paint('eee') })(),
-]))
