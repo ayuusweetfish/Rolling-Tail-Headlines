@@ -26,6 +26,26 @@ const createIssue = async (language) => {
 
 // Serve requests
 
+class ErrorHttpCoded extends Error {
+  constructor(status, message = '') {
+    super(message)
+    this.status = status
+  }
+}
+
+const extractParams = (payload, keys) => {
+  const params = []
+  for (let key of keys) {
+    let value =
+      (payload instanceof FormData || payload instanceof URLSearchParams) ?
+        payload.get(key) : payload[key]
+    if (value === null || value === undefined)
+      throw new ErrorHttpCoded(400, `${key} is not present`)
+    params.push(value)
+  }
+  return params
+}
+
 const serveReq = async (req) => {
   const url = new URL(req.url)
   if (req.method === 'GET' && url.pathname === '/') {
@@ -36,8 +56,38 @@ const serveReq = async (req) => {
     const [uuid, topics] = await createIssue(language)
     return Response.json({ uuid, topics })
   }
+  if (req.method === 'POST' && url.pathname === '/flip') {
+    const [issueUuid, selStr] = extractParams(await req.formData(), ['uuid', 'sel'])
+    const sel = parseInt(selStr)
+    if (!(sel >= 0 && sel < 6)) throw new ErrorHttpCoded(400, 'Invalid `sel`')
+
+    const topics = await db.topicsForIssue(issueUuid) // [[id, non-empty]; 6]
+    if (!topics || topics.length < 6) throw new ErrorHttpCoded(404, 'Issue not found')
+    if (topics[sel][1]) throw new ErrorHttpCoded(400, 'Topic already selected')
+    if (topics[sel ^ 1][1]) throw new ErrorHttpCoded(400, 'Sibling topic already selected')
+    await db.markTopicAsSelected(topics[sel][0])
+
+    if (topics.reduce((a, b) => a + b[1], 0) + 1 === 3) {
+      console.log('Finish!')
+    }
+
+    return new Response('ok')
+  }
   return new Response('Void space, please return', { status: 404 })
 }
 
+const serveReqWrapped = async (req) => {
+  try {
+    return await serveReq(req)
+  } catch (e) {
+    if (e instanceof ErrorHttpCoded) {
+      return new Response(e.message, { status: e.status })
+    } else {
+      return new Response('Internal server error: ' +
+        (e instanceof Error) ? e.message : e.toString(), { status: 500 })
+    }
+  }
+}
+
 const serverPort = +Deno.env.get('SERVE_PORT') || 25117
-const server = Deno.serve({ port: serverPort }, serveReq)
+const server = Deno.serve({ port: serverPort }, serveReqWrapped)

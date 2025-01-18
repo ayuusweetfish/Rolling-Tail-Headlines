@@ -44,6 +44,18 @@ export const newTopics = async (issue_uuid, topics) => {
   }
 }
 
+export const topicsForIssue = async (issue_uuid) => {
+  // XXX: Cannot condense?
+  const values =
+    stmt(`SELECT rowid, (image IS NOT NULL) FROM topics WHERE issue_uuid = ?`)
+      .values(issue_uuid)
+  return values
+}
+
+export const markTopicAsSelected = async (topic_id) => {
+  stmt(`UPDATE topics SET image = '+' WHERE rowid = ?`).run(topic_id)
+}
+
 // Logging
 
 ;`
