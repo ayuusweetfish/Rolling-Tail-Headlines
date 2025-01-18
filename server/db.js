@@ -66,6 +66,18 @@ export const selectedTopicsForIssue = async (issue_uuid) => {
   return values.map((rowFields) => rowFields[0])
 }
 
+export const reserveIssueNumber = async (issue_uuid) => {
+  const value =
+    stmt(`INSERT INTO published_issues (issue_uuid, pages_content) VALUES (?, '') RETURNING issue_num`)
+      .value(issue_uuid)
+  return value[0]
+}
+
+export const publishIssue = async (issue_num, pages_content) => {
+  stmt(`UPDATE published_issues SET pages_content = ? WHERE issue_num = ?`)
+    .run(pages_content, issue_num)
+}
+
 // Logging
 
 ;`

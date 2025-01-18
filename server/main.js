@@ -84,13 +84,18 @@ const serveReq = async (req) => {
     if (topics.reduce((a, b) => a + b[1], 0) + 1 === 3) {
       // All topics selected. Make the newspaper!
       const selTopics = await db.selectedTopicsForIssue(issueUuid)
-      const newspaper = await llm.askForNewspaper(104, selTopics)
+      const issueNum = await db.reserveIssueNumber(issueUuid)
+      const newspaper = await llm.askForNewspaper(issueNum, selTopics)
+      const chunksCombined = []
       const stream = new ReadableStream({
         async pull(controller) {
           const { value: chunk, done } = await newspaper.next()
-          console.log(chunk)
-          if (done) controller.close()
-          else controller.enqueue(new TextEncoder().encode(chunk))
+          if (done) {
+            controller.close()
+            await db.publishIssue(issueNum, chunksCombined.join(''))
+          }
+          chunksCombined.push(chunk)
+          controller.enqueue(new TextEncoder().encode(chunk))
         },
         async cancel(reason) {
           await newspaper.return()  // Abort generator
