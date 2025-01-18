@@ -119,7 +119,7 @@ ${previousTopics.map((s) => '- ' + s).join('\n')}
   }
 }
 
-export const askForNewspaper = async (issueNumber, topics) => {
+export const askForNewspaper = async function* (issueNumber, topics) {
   const frontPagePrompt = `
 In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes reports obtained this way.
 
@@ -133,26 +133,25 @@ Today's issue:
 # **The Rolling Tails Gazette 🦊**
 *22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*
   `.trim()
-    .substring(0, 0) + 'Hello!'
 
-  let frontPageText
-
-  return await requestLLM_Spark([
+  const frontPageTextChunks = []
+  const frontPageStream = await requestLLM_Spark([
     { role: 'user', content: frontPagePrompt },
   ], true)
+  for await (const s of frontPageStream) {
+    yield s
+    frontPageTextChunks.push(s)
+  }
 
-  const innerPages = async () => {
-    const [, innerPagesText] = await requestLLM_Spark([
-      { role: 'user', content: frontPagePrompt },
-      { role: 'assistant', content: frontPageText },
-      { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Please start each page with a first-level title; use subtitles if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page.` },
-    ])
+  const frontPageText = frontPageTextChunks.join('')
 
-    const innerPagesSplit = innerPagesText.split(/^---\s*$/gm)
-      .map((s) => s.trim()).filter((s) => s !== '')
-    if (innerPagesSplit.length < 3) throw new Error('Malformed response from AI')
-
-    return innerPagesSplit
+  const innerPagesStream = await requestLLM_Spark([
+    { role: 'user', content: frontPagePrompt },
+    { role: 'assistant', content: frontPageText },
+    { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Please start each page with a first-level title; use subtitles if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page.` },
+  ], true)
+  for await (const s of innerPagesStream) {
+    yield s
   }
 }
 
