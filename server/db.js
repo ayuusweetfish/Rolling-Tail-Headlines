@@ -114,6 +114,16 @@ export const recentAndPastTopics = async (recent_issues, past_issues) => {
   return [...past_issues_topics, ...recent_issues_topics]
 }
 
+export const topicImage = async (issue_num, topic_num) => {
+  const value =
+    stmt(`SELECT image FROM topics
+          JOIN published_issues ON topics.issue_uuid = published_issues.issue_uuid
+          WHERE issue_num = ? AND image IS NOT NULL
+          ORDER BY topics.rowid ASC LIMIT 1 OFFSET ?`)
+      .values(issue_num, topic_num)
+  return value[0]
+}
+
 export const reserveIssueNumber = async (issue_uuid) => {
   const value =
     stmt(`INSERT INTO published_issues (issue_uuid, pages_content) VALUES (?, '') RETURNING issue_num`)
@@ -124,6 +134,13 @@ export const reserveIssueNumber = async (issue_uuid) => {
 export const publishIssue = async (issue_num, pages_content) => {
   stmt(`UPDATE published_issues SET pages_content = ? WHERE issue_num = ?`)
     .run(pages_content, issue_num)
+}
+
+export const issuePagesContent = async (issue_num) => {
+  const value =
+    stmt(`SELECT pages_content FROM published_issues WHERE issue_num = ?`)
+      .value(issue_num)
+  return value[0]
 }
 
 // Logging

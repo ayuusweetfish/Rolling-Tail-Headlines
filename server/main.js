@@ -129,6 +129,21 @@ const serveReq = async (req) => {
       return new Response('OK')
     }
   }
+  if (req.method === 'GET' && url.pathname.startsWith('/issue/')) {
+    const matchText = url.pathname.match(/^\/issue\/([0-9]{1,10})$/)
+    if (matchText) {
+      const issueNum = parseInt(matchText[1])
+      const text = await db.issuePagesContent(issueNum)
+      return new Response(text)
+    }
+    const matchIllust = url.pathname.match(/^\/issue\/([0-9]{1,10})\/([1-3])$/)
+    if (matchIllust) {
+      const issueNum = parseInt(matchIllust[1])
+      const illustNum = parseInt(matchIllust[2])
+      const image = await db.topicImage(issueNum, illustNum - 1)
+      return new Response(image)
+    }
+  }
   return new Response('Void space, please return', { status: 404 })
 }
 
