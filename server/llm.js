@@ -107,7 +107,7 @@ In the 22nd century, foxes are the playful superpowers. They traverse the world 
 
 What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; omit the source ("scientists", "FoxNN", "document", etc.), simply describe the core topic. Let your imagination go wild, get as novel as possible ^ ^ Cover diverse topics including nature, animal society, science, art, animals' relationship with humans, etc. Do not get fox-centric; be nature-/animal-centric instead. Focus on whimsicality.
 
-Make your ideas concise, in a playful tone, while being refreshingly innovative. Reply with the short, simple sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${englishLanguageName[language]}** first, and then translate accurately into English.`}
+Make your ideas concise, in a playful tone, while being refreshingly innovative. Reply with the short, simple sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${englishLanguageName[language]}**. After all 6, translate everything into English.`}
 
 Past issues:
 ${previousTopics.map((s) => '- ' + s).join('\n')}
