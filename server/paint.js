@@ -4,7 +4,7 @@ import sharp from 'npm:sharp' // Ignore Deno's warning about NPM lifecycle scrip
 // `input`: ArrayBuffer | TypedArray | node:Buffer | string
 // Returns node:Buffer (which extends Uint8Array)
 const normalizeImage = async (input) => {
-  return await sharp(input).grayscale().resize(512, 512).jpeg().toBuffer()
+  return await sharp(input).greyscale().resize(512, 512).jpeg().toBuffer()
 }
 
 const loggedFetchJSON = async (url, options) => {
