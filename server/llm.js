@@ -101,13 +101,15 @@ const englishLanguageName = {
 
 // Returns: [[English text, native text]; 6]
 export const askForTopicSuggestions = async (previousTopics, language) => {
-  const [_, text] = await requestLLM_Spark([
+  const [_, text] = await requestLLM_DeepSeek([
     { role: 'user', content: `
 In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis and report on discoveries, social activities, and political/economical events through Fox Newroll Network (FoxNN).
 
-What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; omit the source ("scientists", "FoxNN", "document", etc.), simply describe the core topic. Let your imagination go wild ^ ^ Be as nonsensical as possible, but keep in mind to keep the concepts somehow related (just in an unexpected way). Also, try to be diverse in the topic and do not get fox-centric. Reply with the sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${englishLanguageName[language]}** first, and then translate accurately into English.`}
+What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; omit the source ("scientists", "FoxNN", "document", etc.), simply describe the core topic. Let your imagination go wild, get as novel as possible ^ ^ Cover diverse topics including nature, animal society, science, art, animals' relationship with humans, etc. Do not get fox-centric; be nature-/animal-centric instead. Focus on whimsicality.
 
-Past issues included the following topics:
+Make your ideas concise, in a playful tone, while being refreshingly innovative. Reply with the short, simple sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${englishLanguageName[language]}** first, and then translate accurately into English.`}
+
+Past issues:
 ${previousTopics.map((s) => '- ' + s).join('\n')}
       `.trim() }
   ])
@@ -128,7 +130,7 @@ export const askForNewspaper = async function* (issueNumber, topics) {
   const frontPagePrompt = `
 In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes reports obtained this way.
 
-Please help the foxes finish the issue! Remember that this is a whimsical world, so don't treat them as breaking news, everything is just regular ^ ^ Please make a front page introducing today's issue and then overviewing and outlining the contents (with pointers to the pages). Start with the header given below. Do not add another overall title (e.g. "Front Page: xxx" or "Today's Headlines: xxx"), but subtitles are allowed.
+Please help the foxes finish the issue! Remember that this is a whimsical world, so don't treat them as breaking news, everything is just regular ^ ^ Please make a front page making an introduction to today's issue and then overviewing/outlining the contents (with pointers to the pages). Start with the header given below. Do not add another overall title (e.g. "Front Page: xxx" or "Today's Headlines: xxx"), but subtitles are allowed.
 
 Today's issue:
 - ${topics[0]} (Page 2)
@@ -140,7 +142,7 @@ Today's issue:
   `.trim()
 
   const frontPageTextChunks = []
-  const frontPageStream = await requestLLM_Spark([
+  const frontPageStream = await requestLLM_DeepSeek([
     { role: 'user', content: frontPagePrompt },
   ], true)
   for await (const s of frontPageStream) {
@@ -152,10 +154,10 @@ Today's issue:
 
   const frontPageText = frontPageTextChunks.join('')
 
-  const innerPagesStream = await requestLLM_Spark([
+  const innerPagesStream = await requestLLM_DeepSeek([
     { role: 'user', content: frontPagePrompt },
     { role: 'assistant', content: frontPageText },
-    { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Please start each page with a first-level title; use subtitles along the way if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page. Start at page 2; do not repeat the front page.` },
+    { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Start each page with a first-level title; use subtitles along the way if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page. Start at page 2; do not repeat the front page.` },
   ], true)
 
   // Replace the first two horizontal rules with page separators
@@ -186,7 +188,7 @@ Today's issue:
 }
 
 export const generateImage = async (topic) => {
-  const [, text] = await requestLLM_Spark([
+  const [, text] = await requestLLM_DeepSeek([
     { role: 'user', content: `
 小狐正在为幻想世界报纸《九尾日报》（The Rolling Tails Gazette）的新闻报道文章制作一张小插图。根据报道标题，可以帮小狐描述一下你会怎样设计图像吗？可以尽情发挥创意，但也记得简洁一些，只需描述图像即可，不必介绍过多象征意义。另外，在不影响画面主题表现的前提下，请尽量减少画面中的内容，甚至也可以省略一些要素，保持图像与文章内容基本有关即可。谢谢~
 
@@ -218,7 +220,7 @@ if (0)
     "Time has been declared a social construct by clocks, who are now refusing to move forward.",
   ], 'zh-Hans'))
 
-if (0) {
+if (1) {
   const s = await askForNewspaper(103, [
     'A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters."',
     'The moon landing was actually filmed on Mars by a secret Martian film crew.',
@@ -227,6 +229,6 @@ if (0) {
   for await (const l of s) await Deno.stdout.write(new TextEncoder().encode(l))
 }
 
-if (1)
+if (0)
   console.log(await generateImage('The Eiffel Tower has begun writing a blog about its existential musings on being iconic.'))
 }
