@@ -1,4 +1,11 @@
 import { logNetwork } from './db.js'
+import sharp from 'npm:sharp' // Ignore Deno's warning about NPM lifecycle scripts
+
+// `input`: ArrayBuffer | TypedArray | node:Buffer | string
+// Returns node:Buffer (which extends Uint8Array)
+const normalizeImage = async (input) => {
+  return await sharp(input).grayscale().resize(512, 512).jpeg().toBuffer()
+}
 
 const loggedFetchJSON = async (url, options) => {
   const t0 = Date.now()
@@ -30,7 +37,8 @@ const paint_CogView3Flash = async (text) => {
   })
 
   const url = imageResponse.data[0].url
-  return await (await fetch(url)).blob()
+  const blob = await (await fetch(url)).blob()
+  return await normalizeImage(await blob.arrayBuffer())
 }
 
 const paint_provider = paint_CogView3Flash

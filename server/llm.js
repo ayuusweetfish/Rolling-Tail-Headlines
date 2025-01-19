@@ -200,8 +200,7 @@ export const generateImage = async (topic) => {
       `.trim() }
   ])
 
-  const imageBlob = await paint(text)
-  return new Uint8Array(await imageBlob.arrayBuffer())
+  return await paint(text)
 }
 
 // ======== Test run ======== //
