@@ -16,7 +16,7 @@ body {
   margin: 0 auto;
   height: 100vh;
   width: 100%;
-  max-width: 111vh;
+  max-width: 111.11vh;
   position: relative;
   background: white;
   overflow: hidden;
@@ -26,24 +26,102 @@ body {
   font-size: 4vh;
 }
 
-#container > * {
+#container > div > * {
   position: absolute;
+}
+
+#container > div {
+  transition: opacity 0.2s ease;
+}
+
+.maybe-hidden {
+  transition: opacity 0.2s ease;
+}
+.hidden {
+  opacity: 0 !important;
+  pointer-events: none;
+  cursor: auto;
 }
 
 p {
   margin: 0;
   padding: 0;
 }
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  margin: 0;
+  padding: 0;
+}
 </style>
 
 <div id='container'>
-  <img src='img/fox-nn.webp' style='width: max(60%, 50vh); left: calc(97% - calc(max(60%, 50vh) / 2)); top: 10%; transform: rotate(90deg)'>
+
+<!-- Main viewport width = min(100vw, 111.11vh) -->
+
+<div>
+  <img src='img/fox-nn.webp' style='width: max(60%, 50vh)' id='scene-startup-foxnn-logo'>
+  <style>
+  #scene-startup-foxnn-logo {
+    left: calc(97% - calc(max(60%, 50vh) / 2));
+    top: 10%;
+    transform: rotate(90deg);
+    transition: left 1.5s ease, top 1.5s ease, transform 1.5s ease;
+  }
+  #scene-startup-foxnn-logo.run {
+    left: 0%;
+    top: 0%;
+    transform: rotate(0deg) scale(0.75);
+  }
+  </style>
+</div>
+<div id='scene-startup-1'>
   <p style='left: 5%; top: 12.5%; font-size: 10.5vh; line-height: 1.5;'>The<br>Rolling Tail<br>Headlines</p>
+  <button style='width: max(60%, 50vh); height: clamp(50vh, 60vw, 66.67vh); left: calc(97% - calc(max(60%, 50vh) / 2)); top: 10%; border-radius: 50%; transform: scale(1.1); z-index: 99' id='btn-start'></button>
 
   <img src='img/pen.webp' style='height: 14.22%; left: 5.6%; top: 66.7%'>
   <p style='left: calc(7% + 14.22vh); top: 67.2%; font-size: 7.2vh;'>简体中文</p>
   <p style='left: calc(7% + 14.22vh); top: 75.7%; font-size: 4.8vh; opacity: 0.5'>zh-Hans</p>
+  <button style='left: calc(7% + 14.22vh); top: 67.2%; width: 100vw; height: 13%' id='btn-lang'></button>
+</div>
+<div id='scene-startup-2' class='hidden'>
+  <div style='left: 57%; width: 40%; top: 12.5%; height: 40%; font-size: 5.6vh; display: table'><p style='display: table-cell; vertical-align: middle; line-height: 1.5'>In the 22<sup>nd</sup> century, foxes are the playful super-wizards.</p></div>
+  <p style='left: 5%; width: 90%; top: 62%; font-size: 4.8vh; line-height: 1.5'>Fox Newroll Network takes you around the world with our one-of-a-kind fox magic of “heads or tails”. Join us!</p>
+  <p style='left: 5%; width: 90%; top: 88%; font-size: 4.8vh; line-height: 1.5; opacity: 0.5' id='scene-startup-press' class='maybe-hidden hidden'>Loading…</p>
+</div>
+
 </div></div>
+
+
+<script>
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+document.getElementById('btn-lang').addEventListener('click', (e) => {
+  alert('!')
+})
+
+document.getElementById('btn-start').addEventListener('click', async (e) => {
+  document.getElementById('btn-lang').setAttribute('tabindex', '-1')
+  document.getElementById('btn-start').setAttribute('tabindex', '-1')
+  document.getElementById('btn-start').blur()
+  document.getElementById('scene-startup-1').classList.add('hidden')
+  document.getElementById('scene-startup-foxnn-logo').classList.add('run')
+
+  ;(async () => {
+    await delay(9000)
+    document.getElementById('scene-startup-press').innerText = 'Press anywhere to continue'
+  })()
+
+  ;(async () => {
+    await delay(2000)
+    document.getElementById('scene-startup-2').classList.remove('hidden')
+    await delay(5000)
+    document.getElementById('scene-startup-press').classList.remove('hidden')
+  })()
+})
+</script>
 
 </body></html>
 
