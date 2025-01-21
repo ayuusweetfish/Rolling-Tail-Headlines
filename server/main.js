@@ -198,6 +198,13 @@ const serveReq = async (req) => {
         return new Response(stream)
       }
     }
+    const matchLang = url.pathname.match(/^\/issue\/([0-9]{1,10})\/lang$/)
+    if (matchLang) {
+      const issueNum = parseInt(matchLang[1])
+      const lang = await db.publishedIssueLanguage(issueNum)
+      if (!lang) throw new ErrorHttpCoded(404, 'Issue not found')
+      return new Response(lang)
+    }
     const matchIllust = url.pathname.match(/^\/issue\/([0-9]{1,10})\/illust\/([1-3])$/)
     if (matchIllust) {
       const issueNum = parseInt(matchIllust[1])

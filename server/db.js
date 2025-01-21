@@ -142,6 +142,14 @@ export const publishIssue = async (issue_num, pages_content) => {
     .run(pages_content, issue_num)
 }
 
+export const publishedIssueLanguage = async (issue_num) => {
+  const value =
+    stmt(`SELECT language FROM
+          issues JOIN published_issues ON issues.uuid = published_issues.issue_uuid
+          WHERE issue_num = ?`).value(issue_num)
+  return (value ? value[0] : null)
+}
+
 export const issuePagesContent = async (issue_num) => {
   const value =
     stmt(`SELECT pages_content FROM published_issues WHERE issue_num = ?`)

@@ -79,6 +79,10 @@ body {
   transition: opacity 0.2s ease;
 }
 
+.lang-hidden {
+  display: none !important;
+}
+
 .maybe-hidden {
   transition: opacity 0.2s ease;
 }
@@ -153,7 +157,7 @@ button, select {
       <option value='zh-Hans'>简体中文 (zh-Hans)</option>
       <option value='zh-Hant'>正體中文 (zh-Hant)</option>
     </optgroup>
-    <optgroup label='Untested languages'>
+    <optgroup label='Untested languages (instructions will be in English)'>
       <option value='hi'>हिन्दी (hi)</option>
       <option value='es'>Español (es)</option>
       <option value='ar'>اَلْعَرَبِيَّةُ (ar)</option>
@@ -185,8 +189,8 @@ button, select {
   </select>
 </div>
 <div id='scene-startup-2' class='hidden'>
-  <div style='left: 57%; width: 40%; top: 12.5%; height: 40%; font-size: 5.6vh; display: table'><p style='display: table-cell; vertical-align: middle; line-height: 1.5'>In the 22<sup>nd</sup> century, foxes are the playful super-wizards.</p></div>
-  <p style='left: 5%; width: 90%; top: 62%; font-size: 4.8vh; line-height: 1.5'>Fox Newroll Network takes you around the world with our one-of-a-kind fox magic of “heads or tails”. Join us in our exploration!</p>
+  <div style='left: 57%; width: 40%; top: 12.5%; height: 40%; font-size: 5.6vh; display: table'><p style='display: table-cell; vertical-align: middle; line-height: 1.5'><span data-lang='default'>In the 22<sup>nd</sup> century, foxes are the playful super-wizards.</span><span data-lang='zh-Hans'>在 22 世纪，狐狸是最最古灵精怪的超级魔法师。</span><span data-lang='zh-Hant'>在 22 世紀，狐狸是最最古靈精怪的超級魔法師。</span></p></div>
+  <p style='left: 5%; width: 90%; top: 62%; font-size: 4.8vh; line-height: 1.5'><span data-lang='default'>Fox Newroll Network takes you around the world with our one-of-a-kind fox magic of “heads or tails”. Join us in our exploration!</span><span data-lang='zh-Hans'>狐研新闻社（FoxNN）用独一无二的“狐头狐尾”魔法，带你环游世界。加入我们的探索之旅吧！</span><span data-lang='zh-Hant'>狐研新聞社（FoxNN）用獨一無二的“狐頭狐尾”魔法，帶你環遊世界。加入我們的探索之旅吧！</span></p>
   <p style='left: 5%; width: 90%; top: 88%; font-size: 4.8vh; line-height: 1.5; opacity: 0.5' id='scene-startup-press' class='maybe-hidden hidden'>Loading…</p>
 </div>
 
@@ -275,6 +279,14 @@ button, select {
   line-height: 1.5;
   margin: 1ex 0;
 }
+#newspaper-container h1,
+#newspaper-container h2,
+#newspaper-container h3,
+#newspaper-container h4,
+#newspaper-container h5,
+#newspaper-container li {
+  line-height: 1.5;
+}
 #newspaper-container hr {
   border: none;
   border-top: 0.5vh rgba(128, 128, 128, 50%) solid;
@@ -305,13 +317,19 @@ button, select {
   <div id='newspaper-header' style='text-align: center'>
     <img src='img/fox-nn.webp' style='width: min(90%, 55vh); display: inline-block; margin-top: 5vh'>
     <p style='font-size: 8vh; line-height: 1; margin: 1ex 0 0.7ex'>The Rolling Tail Gazette</p>
-    <p style='margin: 0 0 2ex'><i>22<sup>nd</sup> Century Ed.</i> <span style='opacity: 0.1'>|</span> <i>Issue <span id='newspaper-issue-num'></span></i> <span style='opacity: 0.1'>|</span> <i>Fox Newroll Network</i></p>
+    <p style='margin: 0 0 2ex'>
+      <i><span data-lang='default'>22<sup>nd</sup> Century Ed.</span><span data-lang='zh-Hans'>22 世纪版</span><span data-lang='zh-Hant'>22 世紀版</span></i>
+      <span style='opacity: 0.1'>|</span>
+      <i><span data-lang='default'>Issue </span><span data-lang='zh-Hans'>第 </span><span data-lang='zh-Hant'>第 </span><span id='newspaper-issue-num'></span><span><span data-lang='zh-Hans'>期</span><span data-lang='zh-Hant'>期</span></span></i>
+      <span style='opacity: 0.1'>|</span>
+      <i><span data-lang='default'>Fox Newroll Network</span><span data-lang='zh-Hans'>狐研新闻社</span><span data-lang='zh-Hant'>狐研新聞社</span></i>
+    </p>
     <hr class='header-end'>
   </div>
 </div>
 </div>
 
-</div></div>
+</div>
 
 
 <script src='https://cdn.jsdelivr.net/npm/marked@15.0.6/marked.min.js'></script>
@@ -384,6 +402,37 @@ const updateLangDisplay = () => {
 }
 updateLangDisplay()
 langSelectEl.addEventListener('change', (e) => updateLangDisplay())
+
+const updateTranslations = (parentEl, lang) => {
+  const els = parentEl.querySelectorAll('[data-lang]')
+  let lastParent = null
+  let siblings = []
+  const process = (siblings) => {
+    // Hide all elements in `siblings` that does not match the language
+    let defaultElement = null
+    let matched = false
+    for (const el of siblings)
+      if (el.dataset.lang === lang) {
+        matched = true
+        el.classList.remove('lang-hidden')
+      } else {
+        el.classList.add('lang-hidden')
+        if (el.dataset.lang === 'default')
+          defaultElement = el
+      }
+    if (!matched && defaultElement)
+      defaultElement.classList.remove('lang-hidden')
+  }
+  for (const el of els) {
+    if (el.parentNode !== lastParent) {
+      process(siblings)
+      lastParent = el.parentNode
+      siblings = []
+    }
+    siblings.push(el)
+  }
+  process(siblings)
+}
 
 const header = document.getElementById('newspaper-header')
 header.remove()
@@ -458,6 +507,8 @@ const playNewspaper = async (issueNum, autoScroll) => {
   const scene = document.getElementById('scene-newspaper')
   const container = document.getElementById('newspaper-container')
   container.classList.add('unfinished')
+
+  updateTranslations(header, await (await fetch(`${api}/issue/${issueNum}/lang`)).text())
 
   for (let i = 0; i < 3; i++) {
     ;(async () => {
@@ -660,6 +711,9 @@ document.getElementById('btn-start').addEventListener('click', async (e) => {
   document.getElementById('btn-start').blur()
   document.getElementById('scene-startup-1').classList.add('hidden')
   document.getElementById('scene-startup-foxnn-logo').classList.add('run')
+
+  updateTranslations(document, langSelectEl.value)
+  updateTranslations(header, langSelectEl.value)
 
   let nextHintShown = false
   let networkDone = false

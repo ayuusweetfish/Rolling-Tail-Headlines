@@ -132,7 +132,7 @@ export const askForTopicSuggestions = async (previousTopics, language) => {
     { role: 'user', content: `
 In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis and report on discoveries, social activities, and political/economical events through Fox Newroll Network (FoxNN).
 
-What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; omit the source ("scientists", "FoxNN", "document", etc.), simply describe the core topic. Let your imagination go wild, get as novel as possible ^ ^ Cover diverse topics including nature, animal society, science, art, animals' relationship with humans, etc. Do not get fox-centric; be nature-/animal-centric instead. Focus on whimsicality.
+What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; omit the source ("scientists", "FoxNN", "document", etc.), simply describe the core topic. Let your imagination go wild, get as novel as possible ^ ^ Cover diverse topics including nature, animal society, science, art, animals' relationship with humans, etc. Do not get fox-centric; be nature-/animal-centric instead. Look at animals as well as non-life (natural objects; abstract concepts). Focus on whimsicality.
 
 Make your ideas concise, in a playful tone, while being refreshingly innovative. Reply with the short, simple sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${languageNames[language][1]} (${languageNames[language][0]})**. After all 6, translate everything into English.`}
 
@@ -163,10 +163,10 @@ Header:
 # **The Rolling Tails Gazette 🦊**
 *22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*${
   language === 'en' ? '' : (
-    `\n\nAfter the header in English, continue in **${languageNames[language][1]} (${languageNames[language][0]})**. `
+    `\n\nRepeat the header in English, and continue in **${languageNames[language][1]} (${languageNames[language][0]})**. `
     + (
-      language.startsWith('zh') ? 'The title is translated as "九尾日报".' :
-        'Please do not translate the title; use the origin English name.'
+      language.startsWith('zh') ? 'The title is translated as "九尾日报"; FoxNN is translated as "狐研新闻社".' :
+        'Please do not translate the title and FoxNN; use the original English names.'
     )
   )
 }
