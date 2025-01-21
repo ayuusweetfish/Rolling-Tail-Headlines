@@ -4,7 +4,12 @@ import sharp from 'npm:sharp' // Ignore Deno's warning about NPM lifecycle scrip
 // `input`: ArrayBuffer | TypedArray | node:Buffer | string
 // Returns node:Buffer (which extends Uint8Array)
 const normalizeImage = async (input) => {
-  return await sharp(input).greyscale().resize(512, 512).jpeg().toBuffer()
+  const alpha = await sharp(input).gamma().greyscale().negate().resize(512, 512)
+    .extractChannel(0).toBuffer()
+  const output = await sharp({ create: {
+    width: 512, height: 512, channels: 3, background: { r: 0, g: 0, b: 0 }
+  } }).greyscale().joinChannel(alpha, { width: 512, height: 512 })
+  return await output.webp({ alphaQuality: 80 }).toBuffer()
 }
 
 const loggedFetchJSON = async (url, options) => {

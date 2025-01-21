@@ -132,22 +132,38 @@ In the 22nd century, foxes are the playful superpowers. They traverse the world 
 
 Please help the foxes finish the issue! Remember that this is a whimsical world, so don't treat them as breaking news, everything is just regular ^ ^ Please make a front page making an introduction to today's issue and then overviewing/outlining the contents (with pointers to the pages). Start with the header given below. Do not add another overall title (e.g. "Front Page: xxx" or "Today's Headlines: xxx"), but subtitles are allowed.
 
-Today's issue:
+Header:
+# **The Rolling Tails Gazette 🦊**
+*22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*
+
+Today's topics:
 - ${topics[0]} (Page 2)
 - ${topics[1]} (Page 3)
 - ${topics[2]} (Page 4)
-
-# **The Rolling Tails Gazette 🦊**
-*22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*
   `.trim()
+
+  // Filter out the repeated header
+  const headerChunks = []
+  let headerDone = false
 
   const frontPageTextChunks = []
   const frontPageStream = await requestLLM_DeepSeek3([
     { role: 'user', content: frontPagePrompt },
   ], true)
   for await (const s of frontPageStream) {
-    yield s
-    frontPageTextChunks.push(s)
+    if (!headerDone) {
+      headerChunks.push(s)
+      const headerCombined = headerChunks.join('')
+      const m = headerCombined.match(/\*Fox Newroll Network\*\s*\n(?:^---[-\s]*)*(^[^-\n][\S\s]*\S[\S\s]*|^[^-\n\s])/m)
+      if (m) {
+        headerDone = true
+        yield m[1]
+        frontPageTextChunks.push(m[1])
+      }
+    } else {
+      yield s
+      frontPageTextChunks.push(s)
+    }
   }
 
   yield '\n\n~~++ page separator ++~~\n\n'
