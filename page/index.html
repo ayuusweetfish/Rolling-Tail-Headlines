@@ -107,18 +107,35 @@ button {
 <!-- Main viewport width = min(100vw, 111.11vh) -->
 
 <div>
-  <img src='img/fox-nn.webp' style='width: max(60%, 50vh)' id='scene-startup-foxnn-logo'>
+  <div style='width: max(60%, 50vh)' id='scene-startup-foxnn-logo'>
+    <img src='img/fox-nn.webp' style='width: 100%; position: absolute; left: 0'>
+  </div>
   <style>
+  @keyframes pop {
+    0%, 90%, 100% {
+      left: 0;
+    }
+    95% {
+      left: -1.2vh;
+    }
+  }
   #scene-startup-foxnn-logo {
     left: calc(97% - calc(max(60%, 50vh) / 2));
     top: 10%;
+    transition: left 1.5s ease, top 1.5s ease, opacity 0.2s ease;
+  }
+  #scene-startup-foxnn-logo > img {
     transform: rotate(90deg);
-    transition: left 1.5s ease, top 1.5s ease, transform 1.5s ease, opacity 0.2s ease;
+    transition: transform 1.5s ease;
+    animation: pop 10s infinite;
   }
   #scene-startup-foxnn-logo.run {
     left: 0%;
     top: 0%;
+  }
+  #scene-startup-foxnn-logo.run > img {
     transform: rotate(0deg) scale(0.75);
+    animation: none;
   }
   </style>
 </div>
