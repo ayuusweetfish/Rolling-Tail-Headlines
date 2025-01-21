@@ -3,6 +3,15 @@ import * as llm from './llm.js'
 
 import { serveFile } from 'jsr:@std/http/file-server'
 
+// Serve requests
+
+class ErrorHttpCoded extends Error {
+  constructor(status, message = '') {
+    super(message)
+    this.status = status
+  }
+}
+
 const createIssue = async (language) => {
   const timestamp = Date.now()
   const uuid = crypto.randomUUID()
@@ -31,18 +40,20 @@ const createIssue = async (language) => {
     previousTopics.push(...seedingTopics.slice(0, 12 - previousTopics.length))
   }
   shuffle(previousTopics)
-  const topics = await llm.askForTopicSuggestions(previousTopics, 'en')
+  const topics = await llm.askForTopicSuggestions(previousTopics, language)
+  if (topics === null) throw new ErrorHttpCoded(400, 'Unknown language')
 
   await db.newEmptyIssue(uuid, timestamp, language)
   await db.newTopics(uuid, topics)
 
   const trimmedTopics = topics.map((t) => {
     const nativeText = t[1]
-    if (language.startsWith('zh') || language === 'ja') {
-      return nativeText.substring(6)
+    if (language.startsWith('zh') || language === 'ja' || language === 'ko') {
+      return nativeText.substring(0, 6)
     } else {
+      const nWords = (language === 'vi' ? 6 : 4)
       let p = -2
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < nWords; i++) {
         p = nativeText.indexOf(' ', p + 1)
         if (p === -1) return nativeText   // Does this really happen?? ^ ^
       }
@@ -51,15 +62,6 @@ const createIssue = async (language) => {
   })
 
   return [uuid, trimmedTopics]
-}
-
-// Serve requests
-
-class ErrorHttpCoded extends Error {
-  constructor(status, message = '') {
-    super(message)
-    this.status = status
-  }
 }
 
 const extractParams = (payload, keys) => {
@@ -97,7 +99,7 @@ const serveReq = async (req) => {
     return serveFile(req, '../page' + url.pathname)
   }
   if (req.method === 'POST' && url.pathname === '/start') {
-    const language = 'en'
+    const [language] = extractParams(await req.formData(), ['lang'])
     const [uuid, trimmedTopics] = await createIssue(language)
     return Response.json({ uuid, topics: trimmedTopics })
   }
@@ -125,7 +127,8 @@ const serveReq = async (req) => {
       // All topics selected. Make the newspaper!
       const selTopics = await db.selectedTopicsForIssue(issueUuid)
       const issueNum = await db.reserveIssueNumber(issueUuid)
-      const newspaperGen = await llm.askForNewspaper(issueNum, selTopics)
+      const language = await db.issueLanguage(issueUuid)
+      const newspaperGen = await llm.askForNewspaper(language, issueNum, selTopics)
       const chunks = []
       const listeners = []
       newspaperStreams[issueNum] = {

@@ -36,6 +36,12 @@ export const newEmptyIssue = async (uuid, timestamp, language) => {
     .run(uuid, timestamp, language)
 }
 
+export const issueLanguage = async (uuid) => {
+  const value =
+    stmt(`SELECT language FROM issues WHERE uuid = ?`).value(uuid)
+  return (value ? value[0] : null)
+}
+
 export const newTopics = async (issue_uuid, topics) => {
   for (const [text_english, text_native] of topics) {
     stmt(`INSERT INTO topics (issue_uuid, text_english, text_native)

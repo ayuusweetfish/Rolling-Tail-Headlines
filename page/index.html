@@ -681,7 +681,8 @@ document.getElementById('btn-start').addEventListener('click', async (e) => {
   ;(async () => {
     gameHandle = await (await fetch(`${api}/start`, {
       method: 'POST',
-      body: ``
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `lang=${langSelectEl.value}`
     })).json()
     document.getElementById('scene-startup-press').innerText = 'Press screen/Space key'
     networkDone = true

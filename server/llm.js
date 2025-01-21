@@ -91,23 +91,50 @@ const requestLLM_Spark = requestLLM_OpenAI(
 
 // Application-specific routines
 
-const englishLanguageName = {
-  'en': 'English',
-  'zh-Hans': 'Simplified Chinese',
-  'zh-Hant': 'Traditional Chinese',
-  'ja': 'Japanese',
-  'fr': 'French',
+const languageNames = {
+  'en': ['English', 'English'],
+  'zh-Hans': ['简体中文', 'Simplified Chinese'],
+  'zh-Hant': ['正體中文', 'Traditional Chinese'],
+  'hi': ['हिन्दी', 'Hindi'],
+  'es': ['Español', 'Spanish'],
+  'ar': ['اَلْعَرَبِيَّةُ', 'Modern Standard Arabic'],
+  'fr': ['Français', 'French'],
+  'bn': ['বাংলা', 'Bengali'],
+  'pt': ['Português', 'Portuguese'],
+  'ru': ['Русский', 'Russian'],
+  'ur': ['اُردُو', 'Urdu'],
+  'id': ['Bahasa Indonesia', 'Indonesian'],
+  'de': ['Deutsch', 'German'],
+  'ja': ['日本語', 'Japanese'],
+  'pcm': ['Naijá', 'Nigerian Pidgin'],
+  'mr': ['मराठी', 'Marathi'],
+  'te': ['తెలుగు', 'Telugu'],
+  'tr': ['Türkçe', 'Turkish'],
+  'ha': ['Harshen Hausa', 'Hausa'],
+  'ta': ['தமிழ்', 'Tamil'],
+  'sw': ['Kiswahili', 'Swahili'],
+  'vi': ['Tiếng Việt', 'Vietnamese'],
+  'tl': ['Wikang Tagalog', 'Tagalog'],
+  'pa': ['پنجابی', 'Punjabi'],
+  'ko': ['한국어', 'Korean'],
+  'fa': ['فارسی', 'Persian'],
+  'jv': ['Basa Jawa', 'Javanese'],
+  'it': ['Italiano', 'Italian'],
+  'po': ['Polski', 'Polish'],
+  'hu': ['Magyar nyelv', 'Hungarian'],
 }
 
 // Returns: [[English text, native text]; 6]
 export const askForTopicSuggestions = async (previousTopics, language) => {
+  if (!languageNames[language]) return null
+
   const [_, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `
 In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis and report on discoveries, social activities, and political/economical events through Fox Newroll Network (FoxNN).
 
 What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; omit the source ("scientists", "FoxNN", "document", etc.), simply describe the core topic. Let your imagination go wild, get as novel as possible ^ ^ Cover diverse topics including nature, animal society, science, art, animals' relationship with humans, etc. Do not get fox-centric; be nature-/animal-centric instead. Focus on whimsicality.
 
-Make your ideas concise, in a playful tone, while being refreshingly innovative. Reply with the short, simple sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${englishLanguageName[language]}**. After all 6, translate everything into English.`}
+Make your ideas concise, in a playful tone, while being refreshingly innovative. Reply with the short, simple sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${languageNames[language][1]} (${languageNames[language][0]})**. After all 6, translate everything into English.`}
 
 Past issues:
 ${previousTopics.map((s) => '- ' + s).join('\n')}
@@ -126,7 +153,7 @@ ${previousTopics.map((s) => '- ' + s).join('\n')}
   }
 }
 
-export const askForNewspaper = async function* (issueNumber, topics) {
+export const askForNewspaper = async function* (language, issueNumber, topics) {
   const frontPagePrompt = `
 In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes reports obtained this way.
 
@@ -134,7 +161,15 @@ Please help the foxes finish the issue! Remember that this is a whimsical world,
 
 Header:
 # **The Rolling Tails Gazette 🦊**
-*22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*
+*22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*${
+  language === 'en' ? '' : (
+    `\n\nAfter the header in English, continue in **${languageNames[language][1]} (${languageNames[language][0]})**. `
+    + (
+      language.startsWith('zh') ? 'The title is translated as "九尾日报".' :
+        'Please do not translate the title; use the origin English name.'
+    )
+  )
+}
 
 Today's topics:
 - ${topics[0]} (Page 2)
@@ -237,7 +272,7 @@ if (0)
   ], 'zh-Hans'))
 
 if (1) {
-  const s = await askForNewspaper(103, [
+  const s = await askForNewspaper('en', 103, [
     'A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters."',
     'The moon landing was actually filmed on Mars by a secret Martian film crew.',
     'Fish are just underwater birds that forgot how to fly.',
