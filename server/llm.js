@@ -89,6 +89,18 @@ const requestLLM_Spark = requestLLM_OpenAI(
   Deno.env.get('API_KEY_SPARK') || prompt('API key (Spark):')
 )
 
+const retry = (fn, attempts, errorMsgPrefix) => async (...args) => {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn(...args)
+    } catch (e) {
+      console.log(`${errorMsgPrefix}: ${e}`)
+      if (i === attempts - 1) throw e
+      continue
+    }
+  }
+}
+
 // Application-specific routines
 
 const languageNames = {
@@ -125,7 +137,7 @@ const languageNames = {
 }
 
 // Returns: [[English text, native text]; 6]
-export const askForTopicSuggestions = async (previousTopics, language) => {
+const _askForTopicSuggestions = async (previousTopics, language) => {
   if (!languageNames[language]) return null
 
   const [_, text] = await requestLLM_DeepSeek3([
@@ -152,6 +164,7 @@ ${previousTopics.map((s) => '- ' + s).join('\n')}
     return matches.slice(0, 6).map((s, i) => [matches[i + 6], s])
   }
 }
+export const askForTopicSuggestions = retry(_askForTopicSuggestions, 3, 'Cannot retrieve topic suggestions')
 
 export const askForNewspaper = async function* (language, issueNumber, topics) {
   const translate = (s) => s ? (' (' + s + ')') : ''
@@ -252,7 +265,7 @@ Today's topics:
   }
 }
 
-export const generateImage = async (topic) => {
+const _generateImage = async (topic) => {
   const [, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `
 小狐正在为幻想世界报纸《九尾日报》（The Rolling Tail Gazette）的新闻报道文章制作一张小插图。根据报道标题，可以帮小狐描述一下你会怎样设计图像吗？可以尽情发挥创意，但也记得简洁一些，只需描述图像即可，不必介绍过多象征意义。另外，在不影响画面主题表现的前提下，请尽量减少画面中的内容，甚至也可以省略一些要素，保持图像与文章内容基本有关即可。谢谢~
@@ -269,10 +282,11 @@ export const generateImage = async (topic) => {
 
   return await paint(text)
 }
+export const generateImage = retry(_generateImage, 3, 'Cannot paint image')
 
 // ======== Test run ======== //
 if (import.meta.main) {
-if (0)
+if (1)
   console.log(await askForTopicSuggestions([
     "Rain is just the sky crying because it’s jealous of how much fun the ocean is having.",
     "Trees are secretly telepathic and gossip about humans during photosynthesis.",
@@ -285,7 +299,7 @@ if (0)
     "Time has been declared a social construct by clocks, who are now refusing to move forward.",
   ], 'zh-Hans'))
 
-if (1) {
+if (0) {
   const s = await askForNewspaper('zh-Hans', 103, [
     'A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters."',
     'The moon landing was actually filmed on Mars by a secret Martian film crew.',

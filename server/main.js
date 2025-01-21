@@ -119,8 +119,13 @@ const serveReq = async (req) => {
     // Spawn the image generation task to run in background
     const selTopicText = await db.getTopicEnglishText(selTopicId)
     ;(async () => {
-      const image = await llm.generateImage(selTopicText)
-      await db.setTopicImage(selTopicId, image)
+      try {
+        const image = await llm.generateImage(selTopicText)
+        await db.setTopicImage(selTopicId, image)
+      } catch (e) {
+        console.log(`Cannot create image for issue ${issueUuid}, topic ${selTopicId}`)
+        await db.setTopicImage(selTopicId, '')
+      }
     })()
 
     if (topics.reduce((a, b) => a + b[1], 0) + 1 === 3) {
