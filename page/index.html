@@ -221,16 +221,25 @@ const playScene = async (n) => {
   document.getElementById('coin-text-tail').classList.remove('hidden')
   await delay(2000)
   document.getElementById('coin-flipping').classList.remove('hidden')
-  pressAnywhereOnce(() => {
-    playScene(Math.floor(Math.random() * 8 + 1))
-  })
+
   const coin = document.getElementById('coin-flipping')
   const coinImageH = document.getElementById('coin-flipping-head')
   const coinImageT = document.getElementById('coin-flipping-tail')
   const t0 = Date.now() + (Math.random() < 0.5 ? 1250 : 0)
   const x = (n % 2 === 0) ? 67 : 33
+  let stopTime = null
+  let animationDone = false
   const updateFrame = () => {
-    const t = Date.now() - t0
+    const t1 = Date.now() - t0
+    let t = t1
+    // If pressed, gradually halt
+    if (stopTime !== null) {
+      const phStop = Math.sin(stopTime / 2500 * Math.PI * 2)
+      const target = stopTime - stopTime % 1250 + 625 + 2500
+      const stopProgress = Math.min(1, (t1 - stopTime) / 4000)
+      t = stopTime + (target - stopTime) * (1 - (1 - stopProgress) * (1 - stopProgress))
+    }
+
     const ph = Math.sin(t / 2500 * Math.PI * 2)
     const w = Math.abs(ph) * 55
     coin.style.width = `${w}vh`
@@ -242,9 +251,16 @@ const playScene = async (n) => {
       coinImageT.style.display = 'inline'
       coinImageH.style.display = 'none'
     }
-    requestAnimationFrame(updateFrame)
+    if (!animationDone) requestAnimationFrame(updateFrame)
   }
   updateFrame()
+
+  pressAnywhereOnce(async () => {
+    animationDone = false
+    stopTime = Date.now() - t0
+    await delay(6000)
+    playScene(Math.floor(Math.random() * 8 + 1))
+  })
 }
 
 document.getElementById('btn-start').addEventListener('click', async (e) => {
