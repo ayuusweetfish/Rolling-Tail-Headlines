@@ -335,7 +335,7 @@ button, select {
 <script src='/ext/marked.min.js'></script>
 <script src='/ext/purify.min.js'></script>
 <script>
-const api = 'http://127.0.0.1:25117'
+const api = window.location.origin
 let gameHandle = null   // { uuid, topics: [[string; 2]; 3] }
 
 const preloadImages = (images, callback) => {
