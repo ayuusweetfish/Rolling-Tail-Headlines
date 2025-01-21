@@ -236,10 +236,20 @@ const playScene = async (n) => {
   const t0 = Date.now() + (Math.random() < 0.5 ? 1250 : 0)
   const x = (n % 2 === 0) ? 67 : 33
   let stopTime = null
+  let stopTimeAtPress = null
   let animationDone = false
   const updateFrame = () => {
     const t1 = Date.now() - t0
     let t = t1
+    // If pressed, jump
+    if (stopTimeAtPress !== null) {
+      const progress = Math.min(1, (t1 - stopTimeAtPress) / 200)
+      const y = 21 - 9 * progress * (1 - progress)
+      coin.style.top = `${y}vh`
+      if (progress === 1) {
+        stopTimeAtPress = null  // Stop further processing
+      }
+    }
     // If pressed, gradually halt
     if (stopTime !== null && t >= stopTime) {
       const target = stopTime + 1250
@@ -271,6 +281,7 @@ const playScene = async (n) => {
 
   pressAnywhereOnce(async () => {
     const t = Date.now() - t0
+    stopTimeAtPress = t
     stopTime = t - t % 1250 + 1250 + 625
     await delay(stopTime - t + 1500)
     const result = stopTime % 2500
