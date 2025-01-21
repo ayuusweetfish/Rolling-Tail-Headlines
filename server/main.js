@@ -95,7 +95,7 @@ const serveReq = async (req) => {
     if (text === null) throw new ErrorHttpCoded(404, 'Issue not found')
     return serveFile(req, '../page/index.html')
   }
-  if (req.method === 'GET' && url.pathname.match(/\/(img|fonts)\/[a-zA-Z0-9_\-.]+/)) {
+  if (req.method === 'GET' && url.pathname.match(/\/(img|ext|fonts)\/[a-zA-Z0-9_\-.]+/)) {
     return serveFile(req, '../page' + url.pathname)
   }
   if (req.method === 'POST' && url.pathname === '/start') {
