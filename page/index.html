@@ -258,7 +258,7 @@ const playScene = async (index) => {
   const coin = document.getElementById('coin-flipping')
   const coinImageH = document.getElementById('coin-flipping-head')
   const coinImageT = document.getElementById('coin-flipping-tail')
-  const t0 = Date.now() + (Math.random() < 0.5 ? 1250 : 0)
+  const t0 = Date.now() - (Math.random() < 0.5 ? 1250 : 0)
   const x = (illustNum % 2 === 0) ? 67 : 33
   let stopTime = null
   let stopTimeAtPress = null
