@@ -368,7 +368,8 @@ const execPressAnywhereFn = () => {
     fn()
   }
 }
-document.getElementById('container').addEventListener('click', (e) => execPressAnywhereFn())
+document.getElementById('container').addEventListener('mousedown', (e) => execPressAnywhereFn())
+document.getElementById('container').addEventListener('touchstart', (e) => execPressAnywhereFn())
 window.addEventListener('keydown', (e) => {
   if (e.keyCode === 32) execPressAnywhereFn()
 })
