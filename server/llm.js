@@ -161,9 +161,9 @@ Please help the foxes finish the issue! Remember that this is a whimsical world,
 
 Header:
 # **The Rolling Tails Gazette 🦊**
-*22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network*${
+== *22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network* ==${
   language === 'en' ? '' : (
-    `\n\nRepeat the header in English, and continue in **${languageNames[language][1]} (${languageNames[language][0]})**. `
+    `\n\nRepeat the header, and continue in **${languageNames[language][1]} (${languageNames[language][0]})**. `
     + (
       language.startsWith('zh') ? 'The title is translated as "九尾日报"; FoxNN is translated as "狐研新闻社".' :
         'Please do not translate the title and FoxNN; use the original English names.'
@@ -189,7 +189,7 @@ Today's topics:
     if (!headerDone) {
       headerChunks.push(s)
       const headerCombined = headerChunks.join('')
-      const m = headerCombined.match(/\*Fox Newroll Network\*\s*\n(?:^---[-\s]*)*(^[^-\n][\S\s]*\S[\S\s]*|^[^-\n\s])/m)
+      const m = headerCombined.match(/==\s*\n(?:^---[-\s]*)*(^[^-\n][\S\s]*\S[\S\s]*|^[^-\n\s])/m)
       if (m) {
         headerDone = true
         yield m[1]
@@ -272,7 +272,7 @@ if (0)
   ], 'zh-Hans'))
 
 if (1) {
-  const s = await askForNewspaper('en', 103, [
+  const s = await askForNewspaper('zh-Hans', 103, [
     'A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters."',
     'The moon landing was actually filmed on Mars by a secret Martian film crew.',
     'Fish are just underwater birds that forgot how to fly.',
