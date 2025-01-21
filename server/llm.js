@@ -158,7 +158,7 @@ export const askForNewspaper = async function* (language, issueNumber, topics) {
   let titleGazette = translate(
     language === 'zh-Hans' ? '九尾日报' :
     language === 'zh-Hant' ? '九尾日報' :
-    'The Rolling Tails Gazette')
+    'The Rolling Tail Gazette')
   let translationFoxNN = translate(
     language === 'zh-Hans' ? '狐研新闻社' :
     language === 'zh-Hant' ? '狐研新聞社' :
@@ -255,7 +255,7 @@ Today's topics:
 export const generateImage = async (topic) => {
   const [, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `
-小狐正在为幻想世界报纸《九尾日报》（The Rolling Tails Gazette）的新闻报道文章制作一张小插图。根据报道标题，可以帮小狐描述一下你会怎样设计图像吗？可以尽情发挥创意，但也记得简洁一些，只需描述图像即可，不必介绍过多象征意义。另外，在不影响画面主题表现的前提下，请尽量减少画面中的内容，甚至也可以省略一些要素，保持图像与文章内容基本有关即可。谢谢~
+小狐正在为幻想世界报纸《九尾日报》（The Rolling Tail Gazette）的新闻报道文章制作一张小插图。根据报道标题，可以帮小狐描述一下你会怎样设计图像吗？可以尽情发挥创意，但也记得简洁一些，只需描述图像即可，不必介绍过多象征意义。另外，在不影响画面主题表现的前提下，请尽量减少画面中的内容，甚至也可以省略一些要素，保持图像与文章内容基本有关即可。谢谢~
 
 例：A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters".
 黑白简笔画卡通平涂风格，线条流畅、圆润、简洁，有手绘风格。画面中，一位穿着简单的人类角色，头戴一顶小帽子，身上系着多个小铃铛，正在森林中行走。周围有几只小动物，如兔子、松鼠和小鸟，好奇地围着他。背景为简单的树木和草地轮廓，使用粗线条和大色块，可加入灰色阴影，使整张图简洁、可爱。小尺寸阅览友好。
