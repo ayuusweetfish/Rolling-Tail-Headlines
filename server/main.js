@@ -75,6 +75,9 @@ const extractParams = (payload, keys) => {
   return params
 }
 
+// issue number -> { listeners }
+const newspaperStreams = {}
+
 const serveReq = async (req) => {
   const url = new URL(req.url)
   if (req.method === 'GET' && url.pathname === '/') {
@@ -112,23 +115,37 @@ const serveReq = async (req) => {
       // All topics selected. Make the newspaper!
       const selTopics = await db.selectedTopicsForIssue(issueUuid)
       const issueNum = await db.reserveIssueNumber(issueUuid)
-      const newspaper = await llm.askForNewspaper(issueNum, selTopics)
-      const chunksCombined = []
-      const stream = new ReadableStream({
-        async pull(controller) {
-          const { value: chunk, done } = await newspaper.next()
-          if (done) {
-            controller.close()
-            await db.publishIssue(issueNum, chunksCombined.join(''))
+      const newspaperGen = await llm.askForNewspaper(issueNum, selTopics)
+      const chunks = []
+      const listeners = []
+      newspaperStreams[issueNum] = {
+        listeners: listeners,
+      }
+      ;(async () => {
+        for await (const chunk of newspaperGen) {
+          chunks.push(chunk)
+          for (let i = 0; i < listeners.length; i++) {
+            try {
+              listeners[i](chunks, false)
+            } catch (e) {
+              console.log('Removing listener', e)
+              const t = listeners.pop()
+              if (i < listeners.length - 1) listeners[i] = t
+              i--
+            }
           }
-          chunksCombined.push(chunk)
-          controller.enqueue(new TextEncoder().encode(chunk))
-        },
-        async cancel(reason) {
-          await newspaper.return()  // Abort generator
-        },
-      })
-      return new Response(stream)
+        }
+        for (let i = 0; i < listeners.length; i++) {
+          try {
+            listeners[i](chunks, true)
+          } catch (e) {
+          }
+        }
+        await db.publishIssue(issueNum, chunks.join(''))
+        delete newspaperStreams[issueNum]
+      })()
+      // Return the issue number
+      return new Response(issueNum)
     } else {
       // Just reply OK
       return new Response('OK')
@@ -139,7 +156,33 @@ const serveReq = async (req) => {
     if (matchText) {
       const issueNum = parseInt(matchText[1])
       const text = await db.issuePagesContent(issueNum)
-      return new Response(text)
+      if (text !== '') {
+        return new Response(text)
+      } else {
+        // Streaming!
+        const s = newspaperStreams[issueNum]
+        if (!s) throw new ErrorHttpCoded(404, 'Issue not found')
+
+        const stream = new ReadableStream({
+          start(controller) {
+            let lastWrittenChunk = 0
+            const fn = (chunks, isFinished) => {
+              try {
+                const n = chunks.length
+                for (let i = lastWrittenChunk; i < n; i++)
+                  controller.enqueue((new TextEncoder()).encode(chunks[i]))
+                lastWrittenChunk = n
+              } catch (e) {
+                controller.close()
+                return
+              }
+              if (isFinished) controller.close()
+            }
+            s.listeners.push(fn)
+          },
+        })
+        return new Response(stream)
+      }
     }
     const matchIllust = url.pathname.match(/^\/issue\/([0-9]{1,10})\/([1-3])$/)
     if (matchIllust) {
