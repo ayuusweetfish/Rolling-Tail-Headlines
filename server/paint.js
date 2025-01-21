@@ -18,7 +18,7 @@ const loggedFetchJSON = async (url, options) => {
   const t0 = Date.now()
   const req = await fetch(url, options)
   const respText = await req.text()
-  await logNetwork(url, options.body, respText, Date.now() - t0)
+  await logNetwork(url, options.body || '', respText, Date.now() - t0)
   console.log(url, respText)
   return JSON.parse(respText)
 }
@@ -48,7 +48,52 @@ const paint_CogView3Flash = async (text) => {
   return await normalizeImage(await blob.arrayBuffer())
 }
 
-const paint_provider = paint_CogView3Flash
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const paint_Wanx21Turbo = async (text) => {
+  const key = Deno.env.get('API_KEY_ALIYUN') || prompt('API key (Aliyun Bailian):')
+  const imageResponse = await loggedFetchJSON(
+    'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer' + key,
+        'X-DashScope-Async': 'enable',
+      },
+      body: JSON.stringify({
+        model: 'wanx2.1-t2i-turbo',
+        input: { prompt: workAroundKeywords(text) },
+        parameters: { size: '1024*1024', n: 1, prompt_extend: false },
+      }),
+    }
+  )
+  const taskId = imageResponse.output.task_id
+  console.log(taskId)
+
+  while (true) {
+    const taskResponse = await loggedFetchJSON(
+      `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer' + key,
+        },
+      }
+    )
+    if (taskResponse.output.task_status === 'SUCCEEDED') {
+      const url = taskResponse.output.results[0].url
+      const blob = await (await fetch(url)).blob()
+      return await normalizeImage(await blob.arrayBuffer())
+    } else if (
+      taskResponse.output.task_status !== 'PENDING' &&
+      taskResponse.output.task_status !== 'RUNNING'
+    ) {
+      throw new Error('Image task failed')
+    }
+    await delay(1000)
+  }
+}
+
+const paint_provider = paint_Wanx21Turbo // paint_CogView3Flash
 const paintConcurrency = 2
 
 const queue = []  // [[text, resolve, reject]; N]
@@ -80,3 +125,8 @@ export const paint = (text) => new Promise((resolve, reject) => {
   queue.push([text, resolve, reject])
   arrange()
 })
+
+// ======== Test run ======== //
+if (import.meta.main) {
+  await Deno.writeFile('1.webp', await paint('黑白简笔画卡通平涂风格，线条流畅、圆润、简洁，有手绘风格。画面中，一位穿着简单的人类角色，头戴一顶小帽子，身上系着多个小铃铛，正在森林中行走。周围有几只小动物，如兔子、松鼠和小鸟，好奇地围着他。背景为简单的树木和草地轮廓，使用粗线条和大色块，可加入灰色阴影，使整张图简洁、可爱。小尺寸阅览友好。'))
+}
