@@ -125,6 +125,12 @@ button {
   #coin-text-tail.hidden { top: 78%; }
   #coin-text-head { top: 0%; }
   #coin-text-tail { top: 80%; }
+  #coin-text-head.hidden.other-side { top: -0.5%; }
+  #coin-text-tail.hidden.other-side { top: 80.5%; }
+  #coin-text-head.hidden.other-side,
+  #coin-text-tail.hidden.other-side {
+    transition: top 0.5s cubic-bezier(0.5, 0, 0.75, 0), opacity 0.2s cubic-bezier(0.45, 0, 0.55, 1);
+  }
   #coin-text-head > *, #coin-text-tail > * {
     position: absolute;
   }
@@ -201,6 +207,8 @@ const playScene = async (n) => {
   document.getElementById('coin-text-background-tail').classList.add('hidden')
   document.getElementById('coin-text-head').classList.add('hidden')
   document.getElementById('coin-text-tail').classList.add('hidden')
+  document.getElementById('coin-text-head').classList.remove('other-side')
+  document.getElementById('coin-text-tail').classList.remove('other-side')
   document.getElementById('coin-flipping').classList.add('hidden')
   if (n % 2 === 0) {
     document.getElementById('scene-game').classList.remove('hflip')
@@ -233,11 +241,17 @@ const playScene = async (n) => {
     const t1 = Date.now() - t0
     let t = t1
     // If pressed, gradually halt
-    if (stopTime !== null) {
-      const phStop = Math.sin(stopTime / 2500 * Math.PI * 2)
-      const target = stopTime - stopTime % 1250 + 625 + 2500
-      const stopProgress = Math.min(1, (t1 - stopTime) / 4000)
-      t = stopTime + (target - stopTime) * (1 - (1 - stopProgress) * (1 - stopProgress))
+    if (stopTime !== null && t >= stopTime) {
+      const target = stopTime + 1250
+      if (t1 > stopTime) {
+        // f(t) = 1 - exp(-kt) * (a-t)/a  (0 <= t <= a)
+        // f'(0) = (1 + ka) / a = 1  =>  k = (a-1) / a
+        const a = 2
+        const k = 0.5
+        const maxT = target - stopTime
+        const T = Math.min(a, (t1 - stopTime) / maxT)
+        t = stopTime + maxT * (1 - Math.exp(-k * T) * (a - T) / a)
+      }
     }
 
     const ph = Math.sin(t / 2500 * Math.PI * 2)
@@ -256,9 +270,22 @@ const playScene = async (n) => {
   updateFrame()
 
   pressAnywhereOnce(async () => {
-    animationDone = false
-    stopTime = Date.now() - t0
-    await delay(6000)
+    const t = Date.now() - t0
+    stopTime = t - t % 1250 + 1250 + 625
+    await delay(stopTime - t + 1500)
+    const result = stopTime % 2500
+    if (result < 1250) {
+      document.getElementById('coin-text-background-head').classList.add('hidden')
+      document.getElementById('coin-text-head').classList.add('hidden')
+      document.getElementById('coin-text-head').classList.add('other-side')
+    } else {
+      document.getElementById('coin-text-background-tail').classList.add('hidden')
+      document.getElementById('coin-text-tail').classList.add('hidden')
+      document.getElementById('coin-text-tail').classList.add('other-side')
+    }
+    await delay(1000)
+    animationDone = true
+    await delay(2500)
     playScene(Math.floor(Math.random() * 8 + 1))
   })
 }
