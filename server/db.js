@@ -140,7 +140,7 @@ export const issuePagesContent = async (issue_num) => {
   const value =
     stmt(`SELECT pages_content FROM published_issues WHERE issue_num = ?`)
       .value(issue_num)
-  return value[0]
+  return (value ? value[0] : null)
 }
 
 // Logging

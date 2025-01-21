@@ -156,6 +156,7 @@ const serveReq = async (req) => {
     if (matchText) {
       const issueNum = parseInt(matchText[1])
       const text = await db.issuePagesContent(issueNum)
+      if (text === null) throw new ErrorHttpCoded(404, 'Issue not found')
       if (text !== '') {
         return new Response(text)
       } else {
@@ -189,7 +190,16 @@ const serveReq = async (req) => {
       const issueNum = parseInt(matchIllust[1])
       const illustNum = parseInt(matchIllust[2])
       const image = await db.topicImage(issueNum, illustNum - 1)
-      return new Response(image)
+      return new Response(image, {
+        headers: { 'Content-Type': 'image/webp' },
+      })
+    }
+    const matchIllustDone = url.pathname.match(/^\/issue\/([0-9]{1,10})\/([1-3])\/done$/)
+    if (matchIllustDone) {
+      const issueNum = parseInt(matchIllustDone[1])
+      const illustNum = parseInt(matchIllustDone[2])
+      const image = await db.topicImage(issueNum, illustNum - 1)
+      return new Response((!image || image === '+') ? '0' : '1')
     }
   }
   return new Response('Void space, please return', { status: 404 })

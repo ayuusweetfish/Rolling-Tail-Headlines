@@ -185,6 +185,9 @@ button {
 #newspaper-container hr.header-end {
   border-top: 0.5vh black solid;
 }
+#newspaper-container a {
+  color: #864;
+}
 .newspaper-page {
   border-top: 1vh black solid;
   padding: 1ex 0;
@@ -260,6 +263,8 @@ document.getElementById('btn-lang').addEventListener('click', (e) => {
 
 const header = document.getElementById('newspaper-header')
 header.remove()
+let newspaperImagesDone = []  // Updated by `playNewspaper`
+let newspaperImages = []  // Filled by this function, `parseNewspaper`, in case of enlengthened blockage
 const parseNewspaper = (issueNum, s) => {
   const container = document.getElementById('newspaper-container')
   container.replaceChildren()
@@ -277,7 +282,7 @@ const parseNewspaper = (issueNum, s) => {
     // Illustration
     if (pageNum > 1) {
       const illustEl = document.createElement('img')
-      illustEl.src = `issue/${issueNum}/${pageNum - 1}`
+      illustEl.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' // 1-pixel transparent PNG
       illustEl.style.width = '50vh'
       if ((issueNum + pageNum) % 2 === 0) {
         illustEl.style.float = 'left'
@@ -290,6 +295,11 @@ const parseNewspaper = (issueNum, s) => {
       if (pageEl.children.length > 2) {
         pageEl.insertBefore(illustEl, pageEl.children[2])
       }
+      // Confirm completion before setting source
+      if (newspaperImagesDone[pageNum - 2])
+        illustEl.src = `issue/${issueNum}/${pageNum - 1}`
+      else
+        newspaperImages[pageNum - 2] = illustEl
     }
 
     // Page number
@@ -325,6 +335,19 @@ const playNewspaper = async (issueNum) => {
   const container = document.getElementById('newspaper-container')
   container.classList.add('unfinished')
 
+  for (let i = 0; i < 3; i++) {
+    ;(async () => {
+      while (true) {
+        const text = await (await fetch(`${api}/issue/${issueNum}/${i + 1}/done`)).text()
+        if (parseInt(text) === 1) break
+        await delay(1000)
+      }
+      newspaperImagesDone[i] = true
+      if (newspaperImages[i])
+        newspaperImages[i].src = `issue/${issueNum}/${i + 1}`
+    })()
+  }
+
   const stream = (await fetch(`${api}/issue/${issueNum}`)).body
   const chunks = []
   for await (const chunk of stream) {
@@ -337,6 +360,14 @@ const playNewspaper = async (issueNum) => {
         behavior: 'smooth',
       })
   }
+
+  // Link
+  const linkEl = document.createElement('a')
+  linkEl.href = `issue/${issueNum}`
+  linkEl.target = '_blank'
+  linkEl.innerText = 'Permalink'
+  container.appendChild(linkEl)
+
   container.classList.remove('unfinished')
   if (newspaperAtBottom)
     scene.scrollTo({
@@ -376,6 +407,7 @@ const randomWithSeed = (range, str) => {
   }
   return (fxHash32((new TextEncoder()).encode(str)) >>> 7) % range
 }
+const illustNums = [] // Initialised at start-game request
 const playScene = async (index) => {
   // Reset all elements to hidden state
   document.getElementById('scene-game').classList.add('hidden')
@@ -389,8 +421,7 @@ const playScene = async (index) => {
   document.getElementById('coin-text-content-head').innerText = gameHandle.topics[index * 2 + 0] + '…'
   document.getElementById('coin-text-content-tail').innerText = gameHandle.topics[index * 2 + 1] + '…'
   document.getElementById('coin-flipping').classList.add('hidden')
-  const illustNum = 1 + randomWithSeed(8,
-    gameHandle.topics[index * 2] + '/' + gameHandle.topics[index * 2 + 1])
+  const illustNum = illustNums[index]
   if (illustNum % 2 === 0) {
     document.getElementById('scene-game').classList.remove('hflip')
   } else {
@@ -511,6 +542,15 @@ document.getElementById('btn-start').addEventListener('click', async (e) => {
   const next = () => {
     document.getElementById('scene-startup-foxnn-logo').classList.add('hidden')
     document.getElementById('scene-startup-2').classList.add('hidden')
+    // Sample 3 non-duplicating illustrations
+    const illustNumPool = [1, 2, 3, 4, 5, 6, 7, 8]
+    for (let i = 0; i < 3; i++) {
+      const p = randomWithSeed(illustNumPool.length,
+        gameHandle.topics[i * 2] + '/' + gameHandle.topics[i * 2 + 1])
+      illustNums[i] = illustNumPool[p]
+      const t = illustNumPool.pop()
+      if (p !== illustNumPool.length - 1) illustNumPool[p] = t
+    }
     playScene(0)
   }
 
