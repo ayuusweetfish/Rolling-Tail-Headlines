@@ -154,19 +154,33 @@ ${previousTopics.map((s) => '- ' + s).join('\n')}
 }
 
 export const askForNewspaper = async function* (language, issueNumber, topics) {
+  const translate = (s) => s ? (' (' + s + ')') : ''
+  let titleGazette = translate(
+    language === 'zh-Hans' ? '九尾日报' :
+    language === 'zh-Hant' ? '九尾日報' :
+    'The Rolling Tails Gazette')
+  let translationFoxNN = translate(
+    language === 'zh-Hans' ? '狐研新闻社' :
+    language === 'zh-Hant' ? '狐研新聞社' :
+    '')
+  let translationHeadsOrTails = translate(
+    language === 'zh-Hans' ? '狐头狐尾魔法' :
+    language === 'zh-Hant' ? '狐頭狐尾魔法' :
+    '')
   const frontPagePrompt = `
-In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN) is a news agent that regularly publishes reports obtained this way.
+In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails'${translationHeadsOrTails} (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN)${translationFoxNN} is a news agent that regularly publishes reports obtained this way.
 
 Please help the foxes finish the issue! Remember that this is a whimsical world, so don't treat them as breaking news, everything is just regular ^ ^ Please make a front page making an introduction to today's issue and then overviewing/outlining the contents (with pointers to the pages). Start with the header given below. Do not add another overall title (e.g. "Front Page: xxx" or "Today's Headlines: xxx"), but subtitles are allowed.
 
 Header:
-# **The Rolling Tails Gazette 🦊**
+# **${titleGazette} 🦊**
 == *22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network* ==${
   language === 'en' ? '' : (
-    `\n\nRepeat the header, and continue in **${languageNames[language][1]} (${languageNames[language][0]})**. `
+    `\n\nAfter this header, continue in **${languageNames[language][1]} (${languageNames[language][0]})**.`
     + (
-      language.startsWith('zh') ? 'The title is translated as "九尾日报"; FoxNN is translated as "狐研新闻社".' :
-        'Please do not translate the title and FoxNN; use the original English names.'
+      language !== 'en' && !translationFoxNN ?
+        ' Please do not translate the title and FoxNN; use the original English names.' :
+        ''
     )
   )
 }
