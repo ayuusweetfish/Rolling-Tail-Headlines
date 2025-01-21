@@ -167,6 +167,12 @@ button {
   padding: 10vh 5vh;
   position: static !important;
 }
+#newspaper-container.unfinished {
+  padding-bottom: 0;
+}
+#newspaper-container.unfinished .newspaper-page:last-child() {
+  margin-bottom: 0;
+}
 #newspaper-container p {
   line-height: 1.5;
   margin: 1ex 0;
@@ -249,8 +255,12 @@ document.getElementById('btn-lang').addEventListener('click', (e) => {
   alert('!')
 })
 
+const header = document.getElementById('newspaper-header')
+header.remove()
 const parseNewspaper = (s) => {
   const container = document.getElementById('newspaper-container')
+  container.replaceChildren()
+
   const pages = s.split('~~++ page separator ++~~')
   let pageNum = 0
   for (const page of pages) {
@@ -261,9 +271,7 @@ const parseNewspaper = (s) => {
     pageEl.innerHTML = html
     container.append(pageEl)
     if (pageNum === 1) {
-      const header = document.getElementById('newspaper-header')
-      header.remove()
-      pageEl.prepend(header)
+      pageEl.prepend(header.cloneNode(/* deep: */ true))
     } else {
       const pageNumEl = document.createElement('p')
       pageNumEl.classList.add('newspaper-page-num')
@@ -272,8 +280,25 @@ const parseNewspaper = (s) => {
     }
   }
 }
-const playNewspaper = () => {
-  parseNewspaper(`
+
+let newspaperAtBottom = true
+let lastAtBottomTrue = 0
+const sceneNewspaper = document.getElementById('scene-newspaper')
+const newspaperContainer = document.getElementById('newspaper-container')
+sceneNewspaper.addEventListener('wheel', (e) => {
+  const H = sceneNewspaper.clientHeight
+  const h = newspaperContainer.clientHeight
+  const currentAtBottom = (sceneNewspaper.scrollTop >= h - H * 1.2)
+  if (!currentAtBottom && lastAtBottomTrue < Date.now() - 500) {
+    newspaperAtBottom = false
+  } else if (currentAtBottom) {
+    newspaperAtBottom = true
+    lastAtBottomTrue = Date.now()
+  }
+  console.log(newspaperAtBottom)
+})
+const playNewspaper = async () => {
+  const s = `
 Welcome, dear readers, to another whimsical edition of *The Rolling Tails Gazette*! Today’s issue is brimming with the kind of delightful discoveries and cosmic curiosities that only the playful superpowers of foxes could uncover. From symphonic mushrooms to celestial talent shows, the world (and beyond) continues to surprise and enchant. Let’s dive into today’s tales, shall we?  
 
 ---
@@ -343,13 +368,24 @@ The success of this trade has inspired other species to explore similar partners
 --- 
 
 And there you have it, dear readers—another day, another set of extraordinary tales from the 22nd century. Until next time, keep your tails rolling and your curiosity alive! 🦊
-`)
+`
+  const ss = s.split('\n')
 
   const scene = document.getElementById('scene-newspaper')
   const container = document.getElementById('newspaper-container')
-  const h = container.clientHeight
-  const H = scene.clientHeight
-  scene.scrollTo({ top: h - H, left: 0, behavior: 'smooth' })
+  container.classList.add('unfinished')
+
+  for (let i = 0; i < ss.length; i++) {
+    parseNewspaper(ss.slice(0, i).join('\n'))
+    if (i === ss.length - 1) container.classList.remove('unfinished')
+    if (newspaperAtBottom)
+      scene.scrollTo({
+        top: container.clientHeight - scene.clientHeight,
+        left: 0,
+        behavior: 'smooth',
+      })
+    await delay(500)
+  }
 }
 
 const playScene = async (index) => {
