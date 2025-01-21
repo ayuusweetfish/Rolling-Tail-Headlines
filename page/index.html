@@ -68,7 +68,7 @@ button {
     left: calc(97% - calc(max(60%, 50vh) / 2));
     top: 10%;
     transform: rotate(90deg);
-    transition: left 1.5s ease, top 1.5s ease, transform 1.5s ease;
+    transition: left 1.5s ease, top 1.5s ease, transform 1.5s ease, opacity 0.2s ease;
   }
   #scene-startup-foxnn-logo.run {
     left: 0%;
@@ -88,8 +88,55 @@ button {
 </div>
 <div id='scene-startup-2' class='hidden'>
   <div style='left: 57%; width: 40%; top: 12.5%; height: 40%; font-size: 5.6vh; display: table'><p style='display: table-cell; vertical-align: middle; line-height: 1.5'>In the 22<sup>nd</sup> century, foxes are the playful super-wizards.</p></div>
-  <p style='left: 5%; width: 90%; top: 62%; font-size: 4.8vh; line-height: 1.5'>Fox Newroll Network takes you around the world with our one-of-a-kind fox magic of “heads or tails”. Join us!</p>
+  <p style='left: 5%; width: 90%; top: 62%; font-size: 4.8vh; line-height: 1.5'>Fox Newroll Network takes you around the world with our one-of-a-kind fox magic of “heads or tails”. Join us in our exploration!</p>
   <p style='left: 5%; width: 90%; top: 88%; font-size: 4.8vh; line-height: 1.5; opacity: 0.5' id='scene-startup-press' class='maybe-hidden hidden'>Loading…</p>
+</div>
+
+
+<div id='scene-game' class='hidden' style='transition: opacity 0.5s ease'>
+  <img src='img/scene-01.webp' style='height: 100%; left: 0; top: 0; transition: opacity 0.5s ease' id='scene-game-illustration'>
+  <div style='background: linear-gradient(rgba(255, 255, 255, 75%) 80%, transparent 100%); height: 20%; width: 100%; top: 0; left: 0; transition: opacity 0.5s ease' id='coin-text-background-head'></div>
+  <div style='background: linear-gradient(transparent 0%, rgba(255, 255, 255, 75%) 20%); height: 20%; width: 100%; top: 80%; left: 0; transition: opacity 0.5s ease' id='coin-text-background-tail'></div>
+  <div id='coin-text-head'>
+    <img src='img/coin-small-head.webp' style='height: 14.22vh; top: 5vh'>
+    <div style='font-size: 6vh; top: 5vh; width: calc(88% - 14.22vh); height: 14.22vh; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-head'>A new type of…</p></div>
+  </div>
+  <div id='coin-text-tail'>
+    <img src='img/coin-small-tail.webp' style='height: 14.22vh; top: 0.78vh'>
+    <div style='font-size: 6vh; top: 0.78vh; width: calc(88% - 14.22vh); height: 14.22vh; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-tail'>Penguins have formed a…</p></div>
+  </div>
+  <style>
+  #coin-text-head, #coin-text-tail {
+    transition: top 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s cubic-bezier(0.37, 0, 0.63, 1);
+    position: relative;
+    left: 0; width: 100%;
+    height: 20%;
+  }
+  #coin-text-head.hidden { top: 2%; }
+  #coin-text-tail.hidden { top: 78%; }
+  #coin-text-head { top: 0%; }
+  #coin-text-tail { top: 80%; }
+  #coin-text-head > *, #coin-text-tail > * {
+    position: absolute;
+  }
+  #coin-text-head > img,
+  #coin-text-tail > img {
+    left: 5%;
+  }
+  #scene-game.hflip > #coin-text-head > img,
+  #scene-game.hflip > #coin-text-tail > img {
+    left: calc(95% - 14.22vh);
+  }
+  #coin-text-head > div,
+  #coin-text-tail > div {
+    left: calc(14.22vh + 8%);
+  }
+  #scene-game.hflip > #coin-text-head > div,
+  #scene-game.hflip > #coin-text-tail > div {
+    left: 4%;
+    text-align: end;
+  }
+  </style>
 </div>
 
 </div></div>
@@ -98,9 +145,50 @@ button {
 <script>
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+let pressAnywhereFn = null
+const pressAnywhereOnce = (fn) => pressAnywhereFn = fn
+const execPressAnywhereFn = () => {
+  if (pressAnywhereFn) {
+    const fn = pressAnywhereFn
+    pressAnywhereFn = null
+    fn()
+  }
+}
+document.getElementById('container').addEventListener('click', (e) => execPressAnywhereFn())
+window.addEventListener('keydown', (e) => {
+  if (e.keyCode === 32) execPressAnywhereFn()
+})
+
 document.getElementById('btn-lang').addEventListener('click', (e) => {
   alert('!')
 })
+
+const playScene = async (n) => {
+  // Reset all elements to hidden state
+  document.getElementById('scene-game').classList.add('hidden')
+  await delay(1000)
+  document.getElementById('coin-text-background-head').classList.add('hidden')
+  document.getElementById('coin-text-background-tail').classList.add('hidden')
+  document.getElementById('coin-text-head').classList.add('hidden')
+  document.getElementById('coin-text-tail').classList.add('hidden')
+  if (n % 2 === 0) {
+    document.getElementById('scene-game').classList.remove('hflip')
+  } else {
+    document.getElementById('scene-game').classList.add('hflip')
+  }
+  document.getElementById('scene-game-illustration').src = 'img/scene-0' + n + '.webp'
+  await delay(1000)
+  document.getElementById('scene-game').classList.remove('hidden')
+  await delay(2000)
+  document.getElementById('coin-text-background-head').classList.remove('hidden')
+  document.getElementById('coin-text-background-tail').classList.remove('hidden')
+  document.getElementById('coin-text-head').classList.remove('hidden')
+  document.getElementById('coin-text-tail').classList.remove('hidden')
+  await delay(2000)
+  pressAnywhereOnce(() => {
+    playScene(Math.floor(Math.random() * 8 + 1))
+  })
+}
 
 document.getElementById('btn-start').addEventListener('click', async (e) => {
   document.getElementById('btn-lang').setAttribute('tabindex', '-1')
@@ -109,16 +197,28 @@ document.getElementById('btn-start').addEventListener('click', async (e) => {
   document.getElementById('scene-startup-1').classList.add('hidden')
   document.getElementById('scene-startup-foxnn-logo').classList.add('run')
 
+  let nextHintShown = false
+  let networkDone = false
+  const next = () => {
+    document.getElementById('scene-startup-foxnn-logo').classList.add('hidden')
+    document.getElementById('scene-startup-2').classList.add('hidden')
+    playScene(Math.floor(Math.random() * 8 + 1))
+  }
+
   ;(async () => {
-    await delay(9000)
-    document.getElementById('scene-startup-press').innerText = 'Press anywhere to continue'
+    await delay(900.0)
+    document.getElementById('scene-startup-press').innerText = 'Press screen/Space key'
+    networkDone = true
+    if (nextHintShown && networkDone) pressAnywhereOnce(next)
   })()
 
   ;(async () => {
     await delay(2000)
     document.getElementById('scene-startup-2').classList.remove('hidden')
-    await delay(5000)
+    await delay(500.0)
     document.getElementById('scene-startup-press').classList.remove('hidden')
+    nextHintShown = true
+    if (nextHintShown && networkDone) pressAnywhereOnce(next)
   })()
 })
 </script>
