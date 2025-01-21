@@ -83,7 +83,14 @@ const serveReq = async (req) => {
   if (req.method === 'GET' && url.pathname === '/') {
     return serveFile(req, '../page/index.html')
   }
-  if (req.method === 'GET' && url.pathname.startsWith('/img')) {
+  const matchIssueDisplay = url.pathname.match(/^\/([0-9]{1,10})$/)
+  if (req.method === 'GET' && matchIssueDisplay) {
+    const issueNum = parseInt(matchIssueDisplay[1])
+    const text = await db.issuePagesContent(issueNum)
+    if (text === null) throw new ErrorHttpCoded(404, 'Issue not found')
+    return serveFile(req, '../page/index.html')
+  }
+  if (req.method === 'GET' && url.pathname.match(/\/(img|fonts)\/[a-zA-Z0-9_\-.]+/)) {
     return serveFile(req, '../page' + url.pathname)
   }
   if (req.method === 'POST' && url.pathname === '/start') {
@@ -152,9 +159,9 @@ const serveReq = async (req) => {
     }
   }
   if (req.method === 'GET' && url.pathname.startsWith('/issue/')) {
-    const matchText = url.pathname.match(/^\/issue\/([0-9]{1,10})$/)
-    if (matchText) {
-      const issueNum = parseInt(matchText[1])
+    const matchRawText = url.pathname.match(/^\/issue\/([0-9]{1,10})\/raw$/)
+    if (matchRawText) {
+      const issueNum = parseInt(matchRawText[1])
       const text = await db.issuePagesContent(issueNum)
       if (text === null) throw new ErrorHttpCoded(404, 'Issue not found')
       if (text !== '') {
@@ -185,7 +192,7 @@ const serveReq = async (req) => {
         return new Response(stream)
       }
     }
-    const matchIllust = url.pathname.match(/^\/issue\/([0-9]{1,10})\/([1-3])$/)
+    const matchIllust = url.pathname.match(/^\/issue\/([0-9]{1,10})\/illust\/([1-3])$/)
     if (matchIllust) {
       const issueNum = parseInt(matchIllust[1])
       const illustNum = parseInt(matchIllust[2])
@@ -194,7 +201,7 @@ const serveReq = async (req) => {
         headers: { 'Content-Type': 'image/webp' },
       })
     }
-    const matchIllustDone = url.pathname.match(/^\/issue\/([0-9]{1,10})\/([1-3])\/done$/)
+    const matchIllustDone = url.pathname.match(/^\/issue\/([0-9]{1,10})\/illust\/([1-3])\/done$/)
     if (matchIllustDone) {
       const issueNum = parseInt(matchIllustDone[1])
       const illustNum = parseInt(matchIllustDone[2])

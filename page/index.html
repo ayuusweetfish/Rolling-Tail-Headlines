@@ -5,6 +5,51 @@
 </head><body>
 
 <style>
+/* latin */
+@font-face {
+  font-family: 'ABeeZee';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/esDR31xSG-6AGleN2tWkkJUEGpA.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'ABeeZee';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/esDR31xSG-6AGleN2tukkJUEGpCeGQ.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'ABeeZee';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/esDT31xSG-6AGleN2tCUkp8DOJKuGA.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'ABeeZee';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/esDT31xSG-6AGleN2tCUnJ8DOJKuGPLB.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'ChillRoundF';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/ChillRoundF.woff2) format('woff2');
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -21,7 +66,7 @@ body {
   background: #fef4e4;
   overflow: hidden;
 
-  font-family: 'ABeeZee', 'ChillRoundF';
+  font-family: 'ABeeZee', 'ChillRoundF', sans-serif;
   line-height: 1;
   font-size: 4vh;
 }
@@ -207,7 +252,7 @@ button {
   <div id='newspaper-header' style='text-align: center'>
     <img src='img/fox-nn.webp' style='width: min(90%, 55vh); display: inline-block; margin-top: 5vh'>
     <p style='font-size: 8vh; line-height: 1; margin: 1ex 0 0.7ex'>The Rolling Tail Gazette</p>
-    <p style='margin: 0 0 2ex'><i>22<sup>nd</sup> Century Edition</i> | <i>Issue <span id='newspaper-issue-num'></span></i> | <i>Fox Newroll Network</i></p>
+    <p style='margin: 0 0 2ex'><i>22<sup>nd</sup> Century Ed.</i> <span style='opacity: 0.1'>|</span> <i>Issue <span id='newspaper-issue-num'></span></i> <span style='opacity: 0.1'>|</span> <i>Fox Newroll Network</i></p>
     <hr class='header-end'>
   </div>
 </div>
@@ -297,7 +342,7 @@ const parseNewspaper = (issueNum, s) => {
       }
       // Confirm completion before setting source
       if (newspaperImagesDone[pageNum - 2])
-        illustEl.src = `issue/${issueNum}/${pageNum - 1}`
+        illustEl.src = `issue/${issueNum}/illust/${pageNum - 1}`
       else
         newspaperImages[pageNum - 2] = illustEl
     }
@@ -330,7 +375,7 @@ sceneNewspaper.addEventListener('wheel', (e) => {
     lastAtBottomTrue = Date.now()
   }
 })
-const playNewspaper = async (issueNum) => {
+const playNewspaper = async (issueNum, autoScroll) => {
   const scene = document.getElementById('scene-newspaper')
   const container = document.getElementById('newspaper-container')
   container.classList.add('unfinished')
@@ -338,22 +383,22 @@ const playNewspaper = async (issueNum) => {
   for (let i = 0; i < 3; i++) {
     ;(async () => {
       while (true) {
-        const text = await (await fetch(`${api}/issue/${issueNum}/${i + 1}/done`)).text()
+        const text = await (await fetch(`${api}/issue/${issueNum}/illust/${i + 1}/done`)).text()
         if (parseInt(text) === 1) break
         await delay(1000)
       }
       newspaperImagesDone[i] = true
       if (newspaperImages[i])
-        newspaperImages[i].src = `issue/${issueNum}/${i + 1}`
+        newspaperImages[i].src = `issue/${issueNum}/illust/${i + 1}`
     })()
   }
 
-  const stream = (await fetch(`${api}/issue/${issueNum}`)).body
+  const stream = (await fetch(`${api}/issue/${issueNum}/raw`)).body
   const chunks = []
   for await (const chunk of stream) {
     chunks.push((new TextDecoder()).decode(chunk))
     parseNewspaper(issueNum, chunks.join(''))
-    if (newspaperAtBottom)
+    if (autoScroll && newspaperAtBottom)
       scene.scrollTo({
         top: container.clientHeight - scene.clientHeight,
         left: 0,
@@ -363,13 +408,13 @@ const playNewspaper = async (issueNum) => {
 
   // Link
   const linkEl = document.createElement('a')
-  linkEl.href = `issue/${issueNum}`
+  linkEl.href = `/${issueNum}`
   linkEl.target = '_blank'
   linkEl.innerText = 'Permalink'
   container.appendChild(linkEl)
 
   container.classList.remove('unfinished')
-  if (newspaperAtBottom)
+  if (autoScroll && newspaperAtBottom)
     scene.scrollTo({
       top: container.clientHeight - scene.clientHeight,
       left: 0,
@@ -522,7 +567,7 @@ const playScene = async (index) => {
       document.getElementById('scene-game').classList.add('hidden')
       await delay(1000)
       const issueNum = parseInt(await flipResponse)
-      playNewspaper(issueNum)
+      playNewspaper(issueNum, /* playNewspaper */ true)
       document.getElementById('scene-newspaper').classList.remove('hidden')
     } else {
       playScene(index + 1)
@@ -567,12 +612,25 @@ document.getElementById('btn-start').addEventListener('click', async (e) => {
   ;(async () => {
     await delay(2000)
     document.getElementById('scene-startup-2').classList.remove('hidden')
-    await delay(500.0)
+    await delay(3000)
     document.getElementById('scene-startup-press').classList.remove('hidden')
     nextHintShown = true
     if (nextHintShown && networkDone) pressAnywhereOnce(next)
   })()
 })
+
+const playPermalink = async (issueNum) => {
+  document.getElementById('scene-startup-foxnn-logo').remove()
+  document.getElementById('scene-startup-1').remove()
+  document.getElementById('scene-startup-2').remove()
+  document.getElementById('scene-game').remove()
+  await playNewspaper(issueNum)
+  document.getElementById('scene-newspaper').classList.remove('hidden')
+}
+const pathMatch = new URL(window.location.href).pathname.match(/\/([0-9]+)$/)
+if (pathMatch) {
+  playPermalink(parseInt(pathMatch[1], 10))
+}
 </script>
 
 </body></html>
