@@ -8,7 +8,7 @@ Submission to [Mini Jam 176: Foxes](https://itch.io/jam/mini-jam-176-foxes), wit
 
 **Rainbow Revealed to be Sky's Diary?**
 
-**Flamingos Going On Strike?**
+**Flamingoes Going On Strike?**
 
 **Ants Take Gold in Tiny Olympics?**
 
@@ -16,6 +16,6 @@ Submission to [Mini Jam 176: Foxes](https://itch.io/jam/mini-jam-176-foxes), wit
 
 Inquiring minds alike, Fox Newroll Network (FoxNN) gets you covered! In the 22nd century, foxes are the playful super-wizards. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages).
 
-Bring your cup of moonbeam tea, join the foxes in their adventure for this issue.
+Bring your cup of moonbeam tea, join the foxes in their inquiries for this issue.
 
-*A text-based exploration. Play with any one of mouse/keyboard/touchscreen. Controls are explained in-game. Landscape screen recommended.*
+*A text-based exploration, with a grain of artificial imagination. Play with any one of mouse/keyboard/touchscreen. Controls are explained in-game. Landscape screen recommended.*
