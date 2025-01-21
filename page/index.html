@@ -93,12 +93,13 @@ p {
   padding: 0;
 }
 
-button {
+button, select {
   cursor: pointer;
   border: none;
   background: none;
   margin: 0;
   padding: 0;
+  color: transparent;
 }
 </style>
 
@@ -144,9 +145,44 @@ button {
   <button style='width: max(60%, 50vh); height: clamp(50vh, 60vw, 66.67vh); left: calc(97% - calc(max(60%, 50vh) / 2)); top: 10%; border-radius: 50%; transform: scale(1.1); z-index: 99' id='btn-start'></button>
 
   <img src='img/pen.webp' style='height: 14.22%; left: 5.6%; top: 66.7%'>
-  <p style='left: calc(7% + 14.22vh); top: 67.2%; font-size: 7.2vh;'>简体中文</p>
-  <p style='left: calc(7% + 14.22vh); top: 75.7%; font-size: 4.8vh; opacity: 0.5'>zh-Hans</p>
-  <button style='left: calc(7% + 14.22vh); top: 67.2%; width: 100vw; height: 13%' id='btn-lang'></button>
+  <p style='left: calc(7% + 14.22vh); top: 67.2%; font-size: 7.2vh' id='lang-name'></p>
+  <p style='left: calc(7% + 14.22vh); top: 75.7%; font-size: 4.8vh; opacity: 0.5' id='lang-code'></p>
+  <select style='left: calc(7% + 14.22vh); top: 67.2%; width: 60vh; height: 13%' id='btn-lang'>
+    <optgroup label='Main languages'>
+      <option value='en'>English (en)</option>
+      <option value='zh-Hans'>简体中文 (zh-Hans)</option>
+      <option value='zh-Hant'>正體中文 (zh-Hant)</option>
+    </optgroup>
+    <optgroup label='Untested languages'>
+      <option value='hi'>हिन्दी (hi)</option>
+      <option value='es'>Español (es)</option>
+      <option value='ar'>اَلْعَرَبِيَّةُ (ar)</option>
+      <option value='fr'>Français (fr)</option>
+      <option value='bn'>বাংলা (bn)</option>
+      <option value='pt'>Português (pt)</option>
+      <option value='ru'>Русский (ru)</option>
+      <option value='ur'>اُردُو (ur)</option>
+      <option value='id'>Bahasa Indonesia (id)</option>
+      <option value='de'>Deutsch (de)</option>
+      <option value='ja'>日本語 (ja)</option>
+      <option value='pcm'>Naijá (pcm)</option>
+      <option value='mr'>मराठी (mr)</option>
+      <option value='te'>తెలుగు (te)</option>
+      <option value='tr'>Türkçe (tr)</option>
+      <option value='ha'>Harshen Hausa (ha)</option>
+      <option value='ta'>தமிழ் (ta)</option>
+      <option value='sw'>Kiswahili (sw)</option>
+      <option value='vi'>Tiếng Việt (vi)</option>
+      <option value='tl'>Wikang Tagalog (tl)</option>
+      <option value='pa'>پنجابی (pa)</option>
+      <option value='ko'>한국어 (ko)</option>
+      <option value='fa'>فارسی (fa)</option>
+      <option value='jv'>Basa Jawa (jv)</option>
+      <option value='it'>Italiano (it)</option>
+      <option value='po'>Polski (po)</option>
+      <option value='hu'>Magyar nyelv (hu)</option>
+    </optgroup>
+  </select>
 </div>
 <div id='scene-startup-2' class='hidden'>
   <div style='left: 57%; width: 40%; top: 12.5%; height: 40%; font-size: 5.6vh; display: table'><p style='display: table-cell; vertical-align: middle; line-height: 1.5'>In the 22<sup>nd</sup> century, foxes are the playful super-wizards.</p></div>
@@ -319,9 +355,35 @@ window.addEventListener('keydown', (e) => {
   if (e.keyCode === 32) execPressAnywhereFn()
 })
 
-document.getElementById('btn-lang').addEventListener('click', (e) => {
-  alert('!')
-})
+const langSelectEl = document.getElementById('btn-lang')
+// Negotiate a language
+const negotiateLang = (accept, supported) => {
+  let bestScore = accept.length + supported.length
+  let bestLang = supported[0]
+  for (const l of supported) {
+    for (const [j, la] of Object.entries(accept)) {
+      if (la.substring(0, 2) === l.substring(0, 2)) {
+        const score = j + (l === la ? 0.5 : 0)
+        if (score < bestScore)
+          [bestScore, bestLang] = [score, l]
+      }
+    }
+  }
+  return bestLang
+}
+const supportedLanguages = []
+for (const o of langSelectEl.options) supportedLanguages.push(o.value)
+const bestLang = negotiateLang(navigator.languages, supportedLanguages)
+langSelectEl.value = bestLang
+
+const updateLangDisplay = () => {
+  const optionCode = langSelectEl.value
+  const optionText = langSelectEl.options[langSelectEl.selectedIndex].text
+  document.getElementById('lang-name').innerText = optionText.substring(0, optionText.lastIndexOf(' '))
+  document.getElementById('lang-code').innerText = optionCode
+}
+updateLangDisplay()
+langSelectEl.addEventListener('change', (e) => updateLangDisplay())
 
 const header = document.getElementById('newspaper-header')
 header.remove()
