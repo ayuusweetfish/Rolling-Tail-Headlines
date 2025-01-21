@@ -105,9 +105,15 @@ button {
     <img src='img/coin-small-tail.webp' style='height: 14.22vh; top: 0.78vh'>
     <div style='font-size: 6vh; top: 0.78vh; width: calc(88% - 14.22vh); height: 14.22vh; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-tail'>Penguins have formed a…</p></div>
   </div>
+  <div style='width: 55vh; height: 55vh; top: 21vh; border-radius: 50%; border: black 1vh solid; transition: opacity 0.5s ease; background: white' id='coin-flipping'>
+    <img style='width: 100%; height: 100%' src='img/coin-head.webp' id='coin-flipping-head'>
+    <img style='width: 100%; height: 100%' src='img/coin-tail.webp' id='coin-flipping-tail'>
+  </div>
   <style>
   #scene-game-illustration {
-    height: 100%; left: 0; top: 0; transition: opacity 0.5s ease;
+    width: 100%; height: 100%; left: 0; top: 0; transition: opacity 0.5s ease;
+    object-fit: cover;
+    object-position: center;
   }
   #coin-text-head, #coin-text-tail {
     transition: top 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s cubic-bezier(0.37, 0, 0.63, 1);
@@ -139,6 +145,8 @@ button {
     left: 4%;
     text-align: end;
   }
+  #coin-flipping { left: calc(67% - 27.5vh); }
+  #scene-game.hflip #coin-flipping { left: calc(33% - 27.5vh); }
   </style>
 </div>
 
@@ -146,6 +154,25 @@ button {
 
 
 <script>
+const preloadImages = (images, callback) => {
+  let count = 0
+  for (const name of images) {
+    const i = new Image()
+    i.onload = () => {
+      i.onload = undefined
+      count += 1
+      callback(count, images.length)
+    }
+    i.src = name
+  }
+}
+preloadImages([
+  'img/coin-head.webp',
+  'img/coin-tail.webp',
+  'img/coin-small-head.webp',
+  'img/coin-small-tail.webp',
+], (n) => console.log(n))
+
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 let pressAnywhereFn = null
@@ -174,6 +201,7 @@ const playScene = async (n) => {
   document.getElementById('coin-text-background-tail').classList.add('hidden')
   document.getElementById('coin-text-head').classList.add('hidden')
   document.getElementById('coin-text-tail').classList.add('hidden')
+  document.getElementById('coin-flipping').classList.add('hidden')
   if (n % 2 === 0) {
     document.getElementById('scene-game').classList.remove('hflip')
   } else {
@@ -192,9 +220,31 @@ const playScene = async (n) => {
   document.getElementById('coin-text-head').classList.remove('hidden')
   document.getElementById('coin-text-tail').classList.remove('hidden')
   await delay(2000)
+  document.getElementById('coin-flipping').classList.remove('hidden')
   pressAnywhereOnce(() => {
     playScene(Math.floor(Math.random() * 8 + 1))
   })
+  const coin = document.getElementById('coin-flipping')
+  const coinImageH = document.getElementById('coin-flipping-head')
+  const coinImageT = document.getElementById('coin-flipping-tail')
+  const t0 = Date.now() + (Math.random() < 0.5 ? 1250 : 0)
+  const x = (n % 2 === 0) ? 67 : 33
+  const updateFrame = () => {
+    const t = Date.now() - t0
+    const ph = Math.sin(t / 2500 * Math.PI * 2)
+    const w = Math.abs(ph) * 55
+    coin.style.width = `${w}vh`
+    coin.style.left = `calc(${x}% - ${w / 2}vh)`
+    if (ph >= 0) {
+      coinImageH.style.display = 'inline'
+      coinImageT.style.display = 'none'
+    } else {
+      coinImageT.style.display = 'inline'
+      coinImageH.style.display = 'none'
+    }
+    requestAnimationFrame(updateFrame)
+  }
+  updateFrame()
 }
 
 document.getElementById('btn-start').addEventListener('click', async (e) => {
