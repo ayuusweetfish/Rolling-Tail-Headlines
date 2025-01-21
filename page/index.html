@@ -389,7 +389,7 @@ const playScene = async (index) => {
   document.getElementById('coin-text-content-head').innerText = gameHandle.topics[index * 2 + 0] + '…'
   document.getElementById('coin-text-content-tail').innerText = gameHandle.topics[index * 2 + 1] + '…'
   document.getElementById('coin-flipping').classList.add('hidden')
-  const illustNum = randomWithSeed(8,
+  const illustNum = 1 + randomWithSeed(8,
     gameHandle.topics[index * 2] + '/' + gameHandle.topics[index * 2 + 1])
   if (illustNum % 2 === 0) {
     document.getElementById('scene-game').classList.remove('hflip')
