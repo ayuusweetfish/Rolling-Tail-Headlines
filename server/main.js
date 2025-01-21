@@ -83,6 +83,9 @@ const serveReq = async (req) => {
   if (req.method === 'GET' && url.pathname === '/') {
     return serveFile(req, '../page/index.html')
   }
+  if (req.method === 'GET' && url.pathname === '/favicon.ico') {
+    return serveFile(req, '../page/img/coin-small-tail.webp')
+  }
   const matchIssueDisplay = url.pathname.match(/^\/([0-9]{1,10})$/)
   if (req.method === 'GET' && matchIssueDisplay) {
     const issueNum = parseInt(matchIssueDisplay[1])
