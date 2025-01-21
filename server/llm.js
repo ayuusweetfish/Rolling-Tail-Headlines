@@ -101,7 +101,7 @@ const englishLanguageName = {
 
 // Returns: [[English text, native text]; 6]
 export const askForTopicSuggestions = async (previousTopics, language) => {
-  const [_, text] = await requestLLM_DeepSeek([
+  const [_, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `
 In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis and report on discoveries, social activities, and political/economical events through Fox Newroll Network (FoxNN).
 
@@ -142,7 +142,7 @@ Today's issue:
   `.trim()
 
   const frontPageTextChunks = []
-  const frontPageStream = await requestLLM_DeepSeek([
+  const frontPageStream = await requestLLM_DeepSeek3([
     { role: 'user', content: frontPagePrompt },
   ], true)
   for await (const s of frontPageStream) {
@@ -154,7 +154,7 @@ Today's issue:
 
   const frontPageText = frontPageTextChunks.join('')
 
-  const innerPagesStream = await requestLLM_DeepSeek([
+  const innerPagesStream = await requestLLM_DeepSeek3([
     { role: 'user', content: frontPagePrompt },
     { role: 'assistant', content: frontPageText },
     { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Start each page with a first-level title; use subtitles along the way if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page. Start at page 2; do not repeat the front page.` },
@@ -188,7 +188,7 @@ Today's issue:
 }
 
 export const generateImage = async (topic) => {
-  const [, text] = await requestLLM_DeepSeek([
+  const [, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `
 小狐正在为幻想世界报纸《九尾日报》（The Rolling Tails Gazette）的新闻报道文章制作一张小插图。根据报道标题，可以帮小狐描述一下你会怎样设计图像吗？可以尽情发挥创意，但也记得简洁一些，只需描述图像即可，不必介绍过多象征意义。另外，在不影响画面主题表现的前提下，请尽量减少画面中的内容，甚至也可以省略一些要素，保持图像与文章内容基本有关即可。谢谢~
 

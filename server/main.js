@@ -1,6 +1,8 @@
 import * as db from './db.js'
 import * as llm from './llm.js'
 
+import { serveFile } from 'jsr:@std/http/file-server'
+
 const createIssue = async (language) => {
   const timestamp = Date.now()
   const uuid = crypto.randomUUID()
@@ -76,7 +78,10 @@ const extractParams = (payload, keys) => {
 const serveReq = async (req) => {
   const url = new URL(req.url)
   if (req.method === 'GET' && url.pathname === '/') {
-    return new Response('1')
+    return serveFile(req, '../page/index.html')
+  }
+  if (req.method === 'GET' && url.pathname.startsWith('/img')) {
+    return serveFile(req, '../page' + url.pathname)
   }
   if (req.method === 'POST' && url.pathname === '/start') {
     const language = 'en'
