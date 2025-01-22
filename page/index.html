@@ -436,34 +436,19 @@ const updateTranslations = (parentEl, lang) => {
 }
 
 // Audio
-const audioBackground = []
-for (let i = 0; i < 2; i++) {
-  audioBackground[i] = new Audio('aud/tails-up.mp3')
-  audioBackground[i].addEventListener
-  audioBackground[i].volume = 0.5
-}
-const audioEventHandler = (e) => {
+// Using two overlapping instances did not result in seamless loop
+// and also increased network traffic. Give up and revert to simple looping T-T
+const audioBackground = new Audio('aud/tails-up.mp3')
+audioBackground.volume = 0.5
+audioBackground.addEventListener('timeupdate', (e) => {
   const totalDur = 4 * 60 / (132 / 60)
-  if (audioBackground[0].currentTime >= totalDur) {
-    audioBackground[1].pause()
-    audioBackground[1].currentTime = Math.max(0, audioBackground[0].currentTime - totalDur - 0.03)
-    audioBackground[1].play()
-    audioBackground[0].removeEventListener('timeupdate', audioEventHandler)
-    audioBackground[1].addEventListener('timeupdate', audioEventHandler)
-    ;[audioBackground[0], audioBackground[1]] = [audioBackground[1], audioBackground[0]]
+  if (audioBackground.currentTime >= totalDur) {
+    audioBackground.pause()
+    audioBackground.currentTime -= totalDur
+    audioBackground.play()
   }
-}
-pressAnywhereOnce(() => {
-  audioBackground[0].addEventListener('timeupdate', audioEventHandler)
-  audioBackground[0].play()
-  // Heat up
-  audioBackground[1].play()
-  audioBackground[1].volume = 0
-  setTimeout(() => {
-    audioBackground[1].pause()
-    audioBackground[1].volume = 0.5
-  }, 1000)
 })
+pressAnywhereOnce(() => audioBackground.play())
 const soundEffects = {}
 for (const name of ['newspaper', 'coin']) {
   soundEffects[name] = new Audio(`aud/${name}.mp3`)
