@@ -755,6 +755,34 @@ document.getElementById('btn-start').addEventListener('click', async (e) => {
   })()
 })
 
+// Audio
+const audioBackground = []
+for (let i = 0; i < 2; i++) {
+  audioBackground[i] = new Audio('aud/tails-up.mp3')
+}
+const audioEventHandler = (e) => {
+  const totalDur = 4 * 60 / (132 / 60)
+  if (audioBackground[0].currentTime >= totalDur) {
+    audioBackground[1].pause()
+    audioBackground[1].currentTime = Math.max(0, audioBackground[0].currentTime - totalDur - 0.03)
+    audioBackground[1].play()
+    ;[audioBackground[0], audioBackground[1]] = [audioBackground[1], audioBackground[0]]
+    audioBackground[0].removeEventListener('timeupdate', audioEventHandler)
+    audioBackground[1].addEventListener('timeupdate', audioEventHandler)
+  }
+}
+pressAnywhereOnce(() => {
+  audioBackground[0].addEventListener('timeupdate', audioEventHandler)
+  audioBackground[0].play()
+  // Heat up
+  audioBackground[1].play()
+  audioBackground[1].volume = 0
+  setTimeout(() => {
+    audioBackground[1].pause()
+    audioBackground[1].volume = 1
+  }, 1000)
+})
+
 const playPermalink = async (issueNum) => {
   document.getElementById('scene-startup-foxnn-logo').remove()
   document.getElementById('scene-startup-1').remove()
