@@ -435,6 +435,44 @@ const updateTranslations = (parentEl, lang) => {
   process(siblings)
 }
 
+// Audio
+const audioBackground = []
+for (let i = 0; i < 2; i++) {
+  audioBackground[i] = new Audio('aud/tails-up.mp3')
+  audioBackground[i].addEventListener
+  audioBackground[i].volume = 0.5
+}
+const audioEventHandler = (e) => {
+  const totalDur = 4 * 60 / (132 / 60)
+  if (audioBackground[0].currentTime >= totalDur) {
+    audioBackground[1].pause()
+    audioBackground[1].currentTime = Math.max(0, audioBackground[0].currentTime - totalDur - 0.03)
+    audioBackground[1].play()
+    audioBackground[0].removeEventListener('timeupdate', audioEventHandler)
+    audioBackground[1].addEventListener('timeupdate', audioEventHandler)
+    ;[audioBackground[0], audioBackground[1]] = [audioBackground[1], audioBackground[0]]
+  }
+}
+pressAnywhereOnce(() => {
+  audioBackground[0].addEventListener('timeupdate', audioEventHandler)
+  audioBackground[0].play()
+  // Heat up
+  audioBackground[1].play()
+  audioBackground[1].volume = 0
+  setTimeout(() => {
+    audioBackground[1].pause()
+    audioBackground[1].volume = 0.5
+  }, 1000)
+})
+const soundEffects = {}
+for (const name of ['newspaper', 'coin']) {
+  soundEffects[name] = new Audio(`aud/${name}.mp3`)
+}
+const playSfx = (name) => {
+  soundEffects[name].currentTime = 0
+  soundEffects[name].play()
+}
+
 const header = document.getElementById('newspaper-header')
 header.remove()
 let newspaperImagesDone = []  // Updated by `playNewspaper`
@@ -675,6 +713,8 @@ const playScene = async (index) => {
     stopTimeAtPress = t
     stopTime = t - t % 1250 + 1250 + 625
 
+    playSfx('coin')
+
     const side = (stopTime % 2500 < 1250) ? 1 : 0 // 0 - head; 1 - tail
     const flipResponse /* Promise<string> */ = (await fetch(`${api}/flip`, {
       method: 'POST',
@@ -698,6 +738,7 @@ const playScene = async (index) => {
     if (index === 2) {
       document.getElementById('scene-game').classList.add('hidden')
       await delay(1000)
+      playSfx('newspaper')
       const issueNum = parseInt(await flipResponse)
       playNewspaper(issueNum, /* playNewspaper */ true)
       document.getElementById('scene-newspaper').classList.remove('hidden')
@@ -753,34 +794,6 @@ document.getElementById('btn-start').addEventListener('click', async (e) => {
     nextHintShown = true
     if (nextHintShown && networkDone) pressAnywhereOnce(next)
   })()
-})
-
-// Audio
-const audioBackground = []
-for (let i = 0; i < 2; i++) {
-  audioBackground[i] = new Audio('aud/tails-up.mp3')
-}
-const audioEventHandler = (e) => {
-  const totalDur = 4 * 60 / (132 / 60)
-  if (audioBackground[0].currentTime >= totalDur) {
-    audioBackground[1].pause()
-    audioBackground[1].currentTime = Math.max(0, audioBackground[0].currentTime - totalDur - 0.03)
-    audioBackground[1].play()
-    ;[audioBackground[0], audioBackground[1]] = [audioBackground[1], audioBackground[0]]
-    audioBackground[0].removeEventListener('timeupdate', audioEventHandler)
-    audioBackground[1].addEventListener('timeupdate', audioEventHandler)
-  }
-}
-pressAnywhereOnce(() => {
-  audioBackground[0].addEventListener('timeupdate', audioEventHandler)
-  audioBackground[0].play()
-  // Heat up
-  audioBackground[1].play()
-  audioBackground[1].volume = 0
-  setTimeout(() => {
-    audioBackground[1].pause()
-    audioBackground[1].volume = 1
-  }, 1000)
 })
 
 const playPermalink = async (issueNum) => {
