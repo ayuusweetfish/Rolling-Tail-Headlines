@@ -136,9 +136,19 @@ const languageNames = {
   'hu': ['Magyar nyelv', 'Hungarian'],
 }
 
+const getLangNameFull = (langCode) => {
+  if (langCode.startsWith('+')) {
+    return langCode.substring(1)
+  } else {
+    if (!languageNames[langCode]) return null
+    return `${languageNames[langCode][1]} (${languageNames[langCode][0]})`
+  }
+}
+
 // Returns: [[English text, native text]; 6]
 const _askForTopicSuggestions = async (previousTopics, language) => {
-  if (!languageNames[language]) return null
+  const langNameFull = getLangNameFull(language)
+  if (!langNameFull) return null
 
   const [_, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `
@@ -146,7 +156,7 @@ In the 22nd century, foxes are the playful super-wizards. They traverse the worl
 
 What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; omit the source ("scientists", "FoxNN", "document", etc.), simply describe the core topic. Let your imagination go wild, get as novel as possible ^ ^ Cover diverse topics including nature, animal society, science, art, animals' relationship with humans, etc. Do not get fox-centric; be nature-/animal-centric instead. Look at animals as well as non-life (natural objects; abstract concepts). Focus on whimsicality.
 
-Make your ideas concise, in a playful tone, while being refreshingly innovative. Reply with the short, simple sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${languageNames[language][1]} (${languageNames[language][0]})**. After all 6, translate everything into English.`}
+Make your ideas concise, in a playful tone, while being refreshingly innovative. Reply with the short, simple sentences in a Markdown list, without extra formatting (bold/italic).${language == 'en' ? '' : ` Reply in **${langNameFull}**. After all 6, translate them into English.`}
 
 Past issues:
 ${previousTopics.map((s) => '- ' + s).join('\n')}
@@ -167,6 +177,9 @@ ${previousTopics.map((s) => '- ' + s).join('\n')}
 export const askForTopicSuggestions = retry(_askForTopicSuggestions, 3, 'Cannot retrieve topic suggestions')
 
 export const askForNewspaper = async function* (language, issueNumber, topics) {
+  const langNameFull = getLangNameFull(language)
+  if (!langNameFull) return null
+
   const translate = (s) => s ? (' (' + s + ')') : ''
   let titleGazette = translate(
     language === 'zh-Hans' ? '九尾日报' :
@@ -189,7 +202,7 @@ Header:
 # **${titleGazette} 🦊**
 == *22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network* ==${
   language === 'en' ? '' : (
-    `\n\nAfter this header, continue in **${languageNames[language][1]} (${languageNames[language][0]})**.`
+    `\n\nAfter this header, continue in **${langNameFull}**.`
     + (
       language !== 'en' && !translationFoxNN ?
         ' Please do not translate the title and FoxNN; use the original English names.' :
