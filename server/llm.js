@@ -1,5 +1,5 @@
 import { logNetwork } from './db.js'
-import { createEventSource } from 'npm:eventsource-client'
+import { createEventSource } from 'npm:eventsource-client@1.1.3'
 import { paint } from './paint.js'
 
 const loggedFetchJSON = async (url, options) => {

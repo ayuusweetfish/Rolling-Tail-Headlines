@@ -3,6 +3,8 @@ import * as llm from './llm.js'
 
 import { serveFile } from 'jsr:@std/http/file-server'
 
+import { cut as jiebaCut } from 'npm:jieba-wasm@2.2.0'
+
 // Serve requests
 
 class ErrorHttpCoded extends Error {
@@ -48,8 +50,17 @@ const createIssue = async (language) => {
 
   const trimmedTopics = topics.map((t) => {
     const nativeText = t[1]
-    if (language.startsWith('zh') || language === 'ja' || language === 'ko') {
-      return nativeText.substring(0, 6)
+    if (language.startsWith('zh')) {
+      const words = jiebaCut(nativeText)
+      let limit = 0
+      let count = 0
+      for (limit = 0; limit < words.length; limit++) {
+        count += words[limit].matchAll(/[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\uD840-\uD868][\uDC00-\uDFFF]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|[\uD86A-\uD86C][\uDC00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D]/g).toArray().length
+        if (count >= 6) { limit++; break }
+      }
+      return words.slice(0, limit).join('')
+    } else if (language === 'ja' || language === 'ko') {
+      return nativeText.substring(0, 8)
     } else {
       const nWords = (language === 'vi' ? 6 : 4)
       let p = -2
