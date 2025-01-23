@@ -463,12 +463,6 @@ const preloadImages = (images, callback) => {
     i.src = name
   }
 }
-preloadImages([
-  'img/coin-head.webp',
-  'img/coin-tail.webp',
-  'img/coin-small-head.webp',
-  'img/coin-small-tail.webp',
-], (n) => console.log(n))
 
 document.addEventListener('DOMContentLoaded', (e) => {
 
@@ -553,19 +547,21 @@ const updateTranslations = (parentEl, lang) => {
 // Audio
 // Using two overlapping instances did not result in seamless loop
 // and also increased network traffic. Give up and revert to simple looping T-T
-const audioBackground = new Audio('aud/tails-up.mp3')
-audioBackground.volume = 0.5
-audioBackground.addEventListener('timeupdate', (e) => {
-  const totalDur = 4 * 60 / (132 / 60)
-  if (audioBackground.currentTime >= totalDur) {
-    audioBackground.pause()
-    audioBackground.currentTime -= totalDur
-    audioBackground.play()
-  }
-})
 const soundEffects = {}
-for (const name of ['newspaper', 'coin']) {
-  soundEffects[name] = new Audio(`aud/${name}.mp3`)
+const initializeAudio = () => {
+  const audioBackground = new Audio('aud/tails-up.mp3')
+  audioBackground.volume = 0.5
+  audioBackground.addEventListener('timeupdate', (e) => {
+    const totalDur = 4 * 60 / (132 / 60)
+    if (audioBackground.currentTime >= totalDur) {
+      audioBackground.pause()
+      audioBackground.currentTime -= totalDur
+      audioBackground.play()
+    }
+  })
+  for (const name of ['newspaper', 'coin']) {
+    soundEffects[name] = new Audio(`aud/${name}.mp3`)
+  }
 }
 const playSfx = (name) => {
   soundEffects[name].currentTime = 0
@@ -910,7 +906,8 @@ const pathMatch = new URL(window.location.href).pathname.match(/\/([0-9]+)$/)
 if (pathMatch) {
   playPermalink(parseInt(pathMatch[1], 10))
 } else {
-  // Play background track only during play
+  // Audio and image preload is active only during play
+  initializeAudio()
   pressAnywhereOnce(() => {
     audioBackground.play()
     // Some browsers (e.g. Firefox Android) takes touch-end/click (rather than touch-start)
@@ -921,6 +918,12 @@ if (pathMatch) {
     }
     setTimeout(tryPlay, 200)
   })
+  preloadImages([
+    'img/coin-head.webp',
+    'img/coin-tail.webp',
+    'img/coin-small-head.webp',
+    'img/coin-small-tail.webp',
+  ], (n) => {})
 }
 
 })
