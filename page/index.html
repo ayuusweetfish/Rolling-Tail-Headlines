@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html><head>
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' />
   <title>The Rolling Tail Headlines</title>
 </head><body>
 
@@ -179,7 +180,7 @@ button, select {
     }
     #scene-startup-foxnn-logo.run {
       left: 20%;
-      top: calc(50vh - 60vw);
+      top: calc(48.5vh - 60vw);
     }
     #scene-startup-foxnn-logo.run > img {
       transform: rotate(0deg) scale(1);
@@ -246,21 +247,31 @@ button, select {
   }
   #fox-nn-intro {
     left: 5%; width: 90%; top: 62%;
-    font-size: 4.8em; line-height: 1.5;
+    font-size: 4.25em; line-height: 1.5;
+  }
+  #scene-startup-press {
+    left: 5%; width: 90%; top: 88%;
+    font-size: 4.25em; line-height: 1.5;
+    opacity: 0.5;
   }
   @media (max-aspect-ratio: 3/4) {
     #fox-nn-catchphrase {
-      left: 5%; width: 90%; top: 53%; height: 100%;
+      left: 5%; width: 90%; top: 51%; height: 100%;
       display: block;
     }
     #fox-nn-intro {
-      top: calc(53% + 20vw);
+      top: calc(52% + 20vw);
+      font-size: max(4.25em, 2.5vh);
+    }
+    #scene-startup-press {
+      top: 87%;
+      font-size: max(4.25em, 2.5vh);
     }
   }
   </style>
   <div id='fox-nn-catchphrase'><p style='display: table-cell; vertical-align: middle; line-height: 1.5'><span data-lang='default'>In the 22<sup>nd</sup> century, foxes are the playful super-wizards.</span><span data-lang='zh-Hans'>在 22 世纪，狐狸是最最古灵精怪的超级魔法师。</span><span data-lang='zh-Hant'>在 22 世紀，狐狸是最最古靈精怪的超級魔法師。</span></p></div>
   <p id='fox-nn-intro'><span data-lang='default'>Fox Newroll Network takes you around the world with our one-of-a-kind fox magic of “heads or tails”. Join us in our exploration!</span><span data-lang='zh-Hans'>狐研新闻社（FoxNN）用独一无二的“狐头狐尾”魔法，带你环游世界。加入我们的探索之旅吧！</span><span data-lang='zh-Hant'>狐研新聞社（FoxNN）用獨一無二的“狐頭狐尾”魔法，帶你環遊世界。加入我們的探索之旅吧！</span></p>
-  <p style='left: 5%; width: 90%; top: 88%; font-size: 4.8em; line-height: 1.5; opacity: 0.5' id='scene-startup-press' class='maybe-hidden hidden'>
+  <p id='scene-startup-press' class='maybe-hidden hidden'>
     <span id='text-loading'><span data-lang='default'>Loading…</span><span data-lang='zh-Hans'>载入中……</span><span data-lang='zh-Hant'>載入中……</span></span><!--
     --><span id='text-press-to-continue' style='display: none'><span data-lang='default'>Press screen/Space key</span><span data-lang='zh-Hans'>点按屏幕/按空格键继续</span><span data-lang='zh-Hant'>點按螢幕/按空格鍵繼續</span></span>
   </p>
@@ -273,11 +284,11 @@ button, select {
   <div style='background: linear-gradient(rgba(254, 244, 228, 0%) 0%, #fef4e4 20%); height: 20%; width: 100%; top: 80%; left: 0; transition: opacity 0.5s ease; opacity: 0.75' id='coin-text-background-tail'></div>
   <div id='coin-text-head'>
     <img src='img/coin-small-head.webp' style='height: 12.798em; top: 5vh'>
-    <div style='font-size: 5.4em; top: 5vh; width: calc(88% - 12.798rem); height: 12.798rem; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-head'>A</p></div>
+    <div style='font-size: max(5.4em, 2.5vh); top: 5vh; width: calc(88% - 12.798rem); height: 12.798rem; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-head'>A</p></div>
   </div>
   <div id='coin-text-tail'>
     <img src='img/coin-small-tail.webp' style='height: 12.798rem; top: calc(15vh - 12.798rem)'>
-    <div style='font-size: 5.4em; top: calc(15vh - 12.798rem); width: calc(88% - 12.798rem); height: 12.798rem; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-tail'>B</p></div>
+    <div style='font-size: max(5.4em, 2.5vh); top: calc(15vh - 12.798rem); width: calc(88% - 12.798rem); height: 12.798rem; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-tail'>B</p></div>
   </div>
   <div id='coin-flipping'>
     <img style='width: 100%; height: 100%' src='img/coin-head.webp' id='coin-flipping-head'>
