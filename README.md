@@ -26,6 +26,10 @@ Sounds:
 - [Newspaper sound @rambler52](https://freesound.org/people/rambler52/sounds/332105/)
 - [Slapstick sample @sgossner](https://freesound.org/people/sgossner/sounds/375710/)
 
+Fonts:
+- [ABeeZee](https://fonts.google.com/specimen/ABeeZee) by Anja Meiners
+- [寒蝉全圆体 (ChillRoundF)](https://github.com/Warren2060/ChillRound) by @Warren2060
+
 All other content is original and licensed under **CC BY-NC 4.0 International**. Sources licensed under **GNU AGPL**. See **COPYING.CC.txt** and **COPYING.AGPL.txt** for full text.
 
 *No AI-produced content has gone into the game itself.*
