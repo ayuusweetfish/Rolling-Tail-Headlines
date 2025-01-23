@@ -649,6 +649,8 @@ const playNewspaper = async (issueNum, autoScroll) => {
   updateTranslations(header, lang)
   updateTranslations(permalinkTempl, lang)
 
+  parseNewspaper(issueNum, '')
+
   for (let i = 0; i < 3; i++) {
     ;(async () => {
       while (true) {
@@ -837,8 +839,8 @@ const playScene = async (index) => {
     if (index === 2) {
       document.getElementById('scene-game').classList.add('hidden')
       await delay(1000)
-      playSfx('newspaper')
       const issueNum = parseInt(await flipResponse)
+      playSfx('newspaper')
       playNewspaper(issueNum, /* playNewspaper */ true)
       document.getElementById('scene-newspaper').classList.remove('hidden')
     } else {
