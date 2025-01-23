@@ -456,7 +456,6 @@ audioBackground.addEventListener('timeupdate', (e) => {
     audioBackground.play()
   }
 })
-pressAnywhereOnce(() => audioBackground.play())
 const soundEffects = {}
 for (const name of ['newspaper', 'coin']) {
   soundEffects[name] = new Audio(`aud/${name}.mp3`)
@@ -802,6 +801,18 @@ const playPermalink = async (issueNum) => {
 const pathMatch = new URL(window.location.href).pathname.match(/\/([0-9]+)$/)
 if (pathMatch) {
   playPermalink(parseInt(pathMatch[1], 10))
+} else {
+  // Play background track only during play
+  pressAnywhereOnce(() => {
+    audioBackground.play()
+    // Some browsers (e.g. Firefox Android) takes touch-end/click (rather than touch-start)
+    // as the start of interaction required to auto-play. So repeatedly check.
+    const tryPlay = () => {
+      audioBackground.play()
+      if (audioBackground.paused) setTimeout(tryPlay, 200)
+    }
+    setTimeout(tryPlay, 200)
+  })
 }
 
 })
