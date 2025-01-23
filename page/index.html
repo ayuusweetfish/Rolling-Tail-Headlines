@@ -258,7 +258,10 @@ button, select {
   </style>
   <div id='fox-nn-catchphrase'><p style='display: table-cell; vertical-align: middle; line-height: 1.5'><span data-lang='default'>In the 22<sup>nd</sup> century, foxes are the playful super-wizards.</span><span data-lang='zh-Hans'>在 22 世纪，狐狸是最最古灵精怪的超级魔法师。</span><span data-lang='zh-Hant'>在 22 世紀，狐狸是最最古靈精怪的超級魔法師。</span></p></div>
   <p id='fox-nn-intro'><span data-lang='default'>Fox Newroll Network takes you around the world with our one-of-a-kind fox magic of “heads or tails”. Join us in our exploration!</span><span data-lang='zh-Hans'>狐研新闻社（FoxNN）用独一无二的“狐头狐尾”魔法，带你环游世界。加入我们的探索之旅吧！</span><span data-lang='zh-Hant'>狐研新聞社（FoxNN）用獨一無二的“狐頭狐尾”魔法，帶你環遊世界。加入我們的探索之旅吧！</span></p>
-  <p style='left: 5%; width: 90%; top: 88%; font-size: 4.8em; line-height: 1.5; opacity: 0.5' id='scene-startup-press' class='maybe-hidden hidden'>Loading…</p>
+  <p style='left: 5%; width: 90%; top: 88%; font-size: 4.8em; line-height: 1.5; opacity: 0.5' id='scene-startup-press' class='maybe-hidden hidden'>
+    <span id='text-loading'><span data-lang='default'>Loading…</span><span data-lang='zh-Hans'>载入中……</span><span data-lang='zh-Hant'>載入中……</span></span><!--
+    --><span id='text-press-to-continue' style='display: none'><span data-lang='default'>Press screen/Space key</span><span data-lang='zh-Hans'>点按屏幕/按空格键继续</span><span data-lang='zh-Hant'>點按螢幕/按空格鍵繼續</span></span>
+  </p>
 </div>
 
 
@@ -391,10 +394,13 @@ button, select {
 .newspaper-page-num {
   text-align: end;
   opacity: 0.5;
-  font-size: 8em !important;
+  font-size: 9em !important;
   font-weight: bold;
   margin: 0.25ex 0 -2ex !important;
   line-height: 1 !important;
+}
+.newspaper-page-num + * {
+  width: calc(100% - 7.5rem);
 }
 .newspaper-page .page-illust {
   width: 50em;
@@ -414,7 +420,7 @@ button, select {
 <div id='newspaper-container'>
   <div id='newspaper-header' style='text-align: center'>
     <img src='img/fox-nn.webp' style='width: min(90%, 55vh); display: inline-block; margin-top: 5vh'>
-    <h1 style='font-size: 7.75em; line-height: 1; margin: 1ex 0 0.7ex'>The Rolling Tail Gazette</h1>
+    <h1 style='font-size: 7.75em; line-height: 1; margin: 1ex 0 0.7ex'><span data-lang='default'>The Rolling Tail Gazette</span><span data-lang='zh-Hans' style='letter-spacing: 0.1em'>— 九尾日报 —</span><span data-lang='zh-Hant' style='letter-spacing: 0.1em'>— 九尾日報 —</span></h1>
     <p style='margin: 0 0 2ex'>
       <i><span data-lang='default'>22<sup>nd</sup> Century Ed.</span><span data-lang='zh-Hans'>22 世纪版</span><span data-lang='zh-Hant'>22 世紀版</span></i>
       <span style='opacity: 0.1'>|</span>
@@ -423,6 +429,9 @@ button, select {
       <i><span data-lang='default'>Fox Newroll Network</span><span data-lang='zh-Hans'>狐研新闻社</span><span data-lang='zh-Hant'>狐研新聞社</span></i>
     </p>
     <hr class='header-end'>
+  </div>
+  <div id='newspaper-permalink'>
+    <a href='#' target='_blank'><span data-lang='default'>Permalink</span><span data-lang='zh-Hans'>固定链接</span><span data-lang='zh-Hant'>固定連結</span></a>
   </div>
 </div>
 </div>
@@ -565,6 +574,8 @@ const playSfx = (name) => {
 
 const header = document.getElementById('newspaper-header')
 header.remove()
+const permalinkTempl = document.getElementById('newspaper-permalink')
+permalinkTempl.remove()
 let newspaperImagesDone = []  // Updated by `playNewspaper`
 let newspaperImages = []  // Filled by this function, `parseNewspaper`, in case of enlengthened blockage
 const parseNewspaper = (issueNum, s) => {
@@ -634,7 +645,9 @@ const playNewspaper = async (issueNum, autoScroll) => {
   const container = document.getElementById('newspaper-container')
   container.classList.add('unfinished')
 
-  updateTranslations(header, await (await fetch(`${api}/issue/${issueNum}/lang`)).text())
+  const lang = await (await fetch(`${api}/issue/${issueNum}/lang`)).text()
+  updateTranslations(header, lang)
+  updateTranslations(permalinkTempl, lang)
 
   for (let i = 0; i < 3; i++) {
     ;(async () => {
@@ -665,10 +678,8 @@ const playNewspaper = async (issueNum, autoScroll) => {
   }
 
   // Link
-  const linkEl = document.createElement('a')
-  linkEl.href = `/${issueNum}`
-  linkEl.target = '_blank'
-  linkEl.innerText = 'Permalink'
+  const linkEl = permalinkTempl.cloneNode(/* deep: */ true)
+  linkEl.querySelector('a').href = `/${issueNum}`
   container.appendChild(linkEl)
 
   container.classList.remove('unfinished')
@@ -869,7 +880,8 @@ document.getElementById('btn-start').addEventListener('click', async (e) => {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `lang=${langSelectEl.value}`
     })).json()
-    document.getElementById('scene-startup-press').innerText = 'Press screen/Space key'
+    document.getElementById('text-loading').style.display = 'none'
+    document.getElementById('text-press-to-continue').style.display = 'inline'
     networkDone = true
     if (nextHintShown && networkDone) pressAnywhereOnce(next)
   })()
