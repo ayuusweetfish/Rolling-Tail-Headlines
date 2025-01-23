@@ -357,6 +357,8 @@ preloadImages([
   'img/coin-small-tail.webp',
 ], (n) => console.log(n))
 
+document.addEventListener('DOMContentLoaded', (e) => {
+
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 let pressAnywhereFn = null
@@ -548,9 +550,11 @@ const playNewspaper = async (issueNum, autoScroll) => {
     })()
   }
 
-  const stream = (await fetch(`${api}/issue/${issueNum}/raw`)).body
+  const reader = (await fetch(`${api}/issue/${issueNum}/raw`)).body.getReader()
   const chunks = []
-  for await (const chunk of stream) {
+  while (true) {
+    const { done, value: chunk } = await reader.read()
+    if (done) { break }
     chunks.push((new TextDecoder()).decode(chunk))
     parseNewspaper(issueNum, chunks.join(''))
     if (autoScroll && newspaperAtBottom)
@@ -793,6 +797,8 @@ const pathMatch = new URL(window.location.href).pathname.match(/\/([0-9]+)$/)
 if (pathMatch) {
   playPermalink(parseInt(pathMatch[1], 10))
 }
+
+})
 </script>
 
 </body></html>
