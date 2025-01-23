@@ -142,7 +142,7 @@ const _askForTopicSuggestions = async (previousTopics, language) => {
 
   const [_, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `
-In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis and report on discoveries, social activities, and political/economical events through Fox Newroll Network (FoxNN).
+In the 22nd century, foxes are the playful super-wizards. They traverse the world on a daily basis and report on discoveries, social activities, and political/economical events through Fox Newroll Network (FoxNN).
 
 What can the topics of the next issue be? List 6 of your absolute favourites. Write each as a simple, concise, short sentence; omit the source ("scientists", "FoxNN", "document", etc.), simply describe the core topic. Let your imagination go wild, get as novel as possible ^ ^ Cover diverse topics including nature, animal society, science, art, animals' relationship with humans, etc. Do not get fox-centric; be nature-/animal-centric instead. Look at animals as well as non-life (natural objects; abstract concepts). Focus on whimsicality.
 
@@ -181,7 +181,7 @@ export const askForNewspaper = async function* (language, issueNumber, topics) {
     language === 'zh-Hant' ? '狐頭狐尾魔法' :
     '')
   const frontPagePrompt = `
-In the 22nd century, foxes are the playful superpowers. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails'${translationHeadsOrTails} (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN)${translationFoxNN} is a news agent that regularly publishes reports obtained this way.
+In the 22nd century, foxes are the playful super-wizards. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails'${translationHeadsOrTails} (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN)${translationFoxNN} is a news agent that regularly publishes reports obtained this way.
 
 Please help the foxes finish the issue! Remember that this is a whimsical world, so don't treat them as breaking news, everything is just regular ^ ^ Please make a front page making an introduction to today's issue and then overviewing/outlining the contents (with pointers to the pages). Start with the header given below. Do not add another overall title (e.g. "Front Page: xxx" or "Today's Headlines: xxx"), but subtitles are allowed.
 
