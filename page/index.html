@@ -55,6 +55,7 @@ body {
   padding: 0;
   line-height: 1;
   background: #e2d3bb;
+  color: black;
 }
 
 #container {
@@ -68,6 +69,9 @@ body {
 
   font-family: 'ABeeZee', 'ChillRoundF', sans-serif;
   line-height: 1;
+}
+
+html {
   font-size: min(1vw, 1.111vh);
 }
 /* Main viewport width = min(100vw, 111.11vh) */
@@ -150,7 +154,7 @@ button, select {
   }
   #game-title {
     left: 5%;
-    top: calc(40% - 2.54em);
+    top: calc(40% - 25rem);
     font-size: 9.451em;
     line-height: 1.5;
   }
@@ -260,15 +264,15 @@ button, select {
 
 <div id='scene-game' class='hidden' style='transition: opacity 0.5s ease'>
   <img src='' id='scene-game-illustration'>
-  <div style='background: linear-gradient(rgba(254, 244, 228, 75%) 80%, transparent 100%); height: 20%; width: 100%; top: 0; left: 0; transition: opacity 0.5s ease' id='coin-text-background-head'></div>
-  <div style='background: linear-gradient(transparent 0%, rgba(254, 244, 228, 75%) 20%); height: 20%; width: 100%; top: 80%; left: 0; transition: opacity 0.5s ease' id='coin-text-background-tail'></div>
+  <div style='background: linear-gradient(#fef4e4 80%, transparent 100%); height: 20%; width: 100%; top: 0; left: 0; transition: opacity 0.5s ease; opacity: 0.75' id='coin-text-background-head'></div>
+  <div style='background: linear-gradient(transparent 0%, #fef4e4 20%); height: 20%; width: 100%; top: 80%; left: 0; transition: opacity 0.5s ease; opacity: 0.75' id='coin-text-background-tail'></div>
   <div id='coin-text-head'>
-    <img src='img/coin-small-head.webp' style='height: 14.22vh; top: 5vh'>
-    <div style='font-size: 6vh; top: 5vh; width: calc(88% - 14.22vh); height: 14.22vh; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-head'>A</p></div>
+    <img src='img/coin-small-head.webp' style='height: 12.798em; top: 5vh'>
+    <div style='font-size: 5.4em; top: 5vh; width: calc(88vw - 12.798rem); height: 12.798rem; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-head'>A</p></div>
   </div>
   <div id='coin-text-tail'>
-    <img src='img/coin-small-tail.webp' style='height: 14.22vh; top: 0.78vh'>
-    <div style='font-size: 6vh; top: 0.78vh; width: calc(88% - 14.22vh); height: 14.22vh; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-tail'>B</p></div>
+    <img src='img/coin-small-tail.webp' style='height: 12.798rem; top: calc(15vh - 12.798rem)'>
+    <div style='font-size: 5.4em; top: calc(15vh - 12.798rem); width: calc(88vw - 12.798rem); height: 12.798rem; display: table'><p style='display: table-cell; vertical-align: middle' id='coin-text-content-tail'>B</p></div>
   </div>
   <div style='width: 55vh; height: 55vh; top: 21vh; border-radius: 50%; border: black 1vh solid; transition: opacity 0.5s ease; background: #fef4e4' id='coin-flipping'>
     <img style='width: 100%; height: 100%' src='img/coin-head.webp' id='coin-flipping-head'>
@@ -279,6 +283,10 @@ button, select {
     width: 100%; height: 100%; left: 0; top: 0; transition: opacity 0.5s ease;
     object-fit: cover;
     object-position: center;
+  }
+  @media (max-aspect-ratio: 3/4) {
+    #scene-game #scene-game-illustration { object-position: 0 0; }
+    #scene-game.hflip #scene-game-illustration { object-position: 1 0; }
   }
   #coin-text-head, #coin-text-tail {
     transition: top 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s cubic-bezier(0.37, 0, 0.63, 1);
@@ -305,11 +313,11 @@ button, select {
   }
   #scene-game.hflip > #coin-text-head > img,
   #scene-game.hflip > #coin-text-tail > img {
-    left: calc(95% - 14.22vh);
+    left: calc(95% - 12.798rem);
   }
   #coin-text-head > div,
   #coin-text-tail > div {
-    left: calc(14.22vh + 8%);
+    left: calc(12.798rem + 8%);
   }
   #scene-game.hflip > #coin-text-head > div,
   #scene-game.hflip > #coin-text-tail > div {
@@ -341,11 +349,7 @@ button, select {
 #newspaper-container p,
 #newspaper-container ul,
 #newspaper-container ol {
-  font-size: 4em;
-}
-#newspaper-container ul p,
-#newspaper-container ol p {
-  font-size: 1em;
+  font-size: 4rem;
 }
 #newspaper-container p {
   line-height: 1.5;
