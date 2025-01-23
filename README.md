@@ -18,4 +18,14 @@ Inquiring minds alike, Fox Newroll Network (FoxNN) gets you covered! In the 22nd
 
 Bring your cup of moonbeam tea, join the foxes in their inquiries for this issue.
 
-*A text-based exploration, with a grain of artificial imagination. Play with any one of mouse/keyboard/touchscreen. Controls are explained in-game. Landscape screen recommended.*
+*A text-based exploration, with a grain of Automatic Imagination. Supports many types of input, with controls explained in-game. Has sounds; please use the browser's tab mute function to toggle it.*
+
+## Credits & Permit
+
+Sounds:
+- [Newspaper sound @rambler52](https://freesound.org/people/rambler52/sounds/332105/)
+- [Slapstick sample @sgossner](https://freesound.org/people/sgossner/sounds/375710/)
+
+All other content is original and licensed under **CC BY-NC 4.0 International**. Sources licensed under **GNU AGPL**. See **COPYING.CC.txt** and **COPYING.AGPL.txt** for full text.
+
+*No AI-produced content has gone into the game itself.*
