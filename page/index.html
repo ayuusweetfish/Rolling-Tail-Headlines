@@ -68,8 +68,10 @@ body {
 
   font-family: 'ABeeZee', 'ChillRoundF', sans-serif;
   line-height: 1;
-  font-size: 4vh;
+  font-size: min(1vw, 1.111vh);
 }
+/* Main viewport width = min(100vw, 111.11vh) */
+
 
 #container > div > * {
   position: absolute;
@@ -109,10 +111,8 @@ button, select {
 
 <div id='container'>
 
-<!-- Main viewport width = min(100vw, 111.11vh) -->
-
 <div>
-  <div style='width: max(60%, 50vh)' id='scene-startup-foxnn-logo'>
+  <div id='scene-startup-foxnn-logo'>
     <img src='img/fox-nn.webp' style='width: 100%; position: absolute; left: 0'>
   </div>
   <style>
@@ -125,6 +125,7 @@ button, select {
     }
   }
   #scene-startup-foxnn-logo {
+    width: max(60%, 50vh);
     left: calc(97% - calc(max(60%, 50vh) / 2));
     top: 10%;
     transition: left 1.5s ease, top 1.5s ease, opacity 0.2s ease;
@@ -134,23 +135,66 @@ button, select {
     transition: transform 1.5s ease;
     animation: pop 10s infinite;
   }
+  #btn-start {
+    width: max(60%, 50vh); height: clamp(50vh, 60vw, 66.67vh);
+    left: calc(97% - calc(max(60%, 50vh) / 2)); top: 10%;
+  }
   #scene-startup-foxnn-logo.run {
     left: 0%;
-    top: 0%;
+    /* size is max(min(100vw, 111.11vh) * 60%, 50vh) = clamp(50vh, 60vw, 66.67vh) */
+    top: calc(32.5vh - clamp(25vh, 30vw, 33.33vh));
   }
   #scene-startup-foxnn-logo.run > img {
     transform: rotate(0deg) scale(0.75);
     animation: none;
   }
+  #game-title {
+    left: 5%;
+    top: calc(40% - 2.54em);
+    font-size: 9.451em;
+    line-height: 1.5;
+  }
+  #rolling-sp-tail { display: inline; }
+  #rolling-br-tail { display: none; }
+  @media (max-aspect-ratio: 3/4) {
+    /* Compensate with transform */
+    #scene-startup-foxnn-logo {
+      width: 60vw;
+      left: 67vw;
+      top: calc(35% - 30vw);
+    }
+    #scene-startup-foxnn-logo > img {
+      transform: rotate(90deg) scale(1.5)
+    }
+    #btn-start {
+      left: 52vw;
+      top: calc(35% - 45vw);
+      width: 90vw; height: 90vw;
+    }
+    #scene-startup-foxnn-logo.run {
+      left: 20%;
+      top: calc(50vh - 60vw);
+    }
+    #scene-startup-foxnn-logo.run > img {
+      transform: rotate(0deg) scale(1);
+    }
+    #game-title {
+      top: calc(40% - 45vw);
+      font-size: 12vw;
+    }
+    #rolling-sp-tail { display: none; }
+    #rolling-br-tail { display: inline-block; }
+  }
   </style>
 </div>
 <div id='scene-startup-1'>
-  <p style='left: 5%; top: 12.5%; font-size: 10.5vh; line-height: 1.5;'>The<br>Rolling Tail<br>Headlines</p>
-  <button style='width: max(60%, 50vh); height: clamp(50vh, 60vw, 66.67vh); left: calc(97% - calc(max(60%, 50vh) / 2)); top: 10%; border-radius: 50%; transform: scale(1.1); z-index: 99' id='btn-start'></button>
+  <p id='game-title'>The<br>Rolling<span id='rolling-sp-tail'> </span><br id='rolling-br-tail'>Tail<br>Headlines</p>
+  <button style='border-radius: 50%; transform: scale(1.1); z-index: 99' id='btn-start'></button>
 
-  <img src='img/pen.webp' style='height: 14.22%; left: 5.6%; top: 66.7%'>
-  <p style='left: calc(7% + 14.22vh); top: 67.2%; font-size: 7.2vh' id='lang-name'></p>
-  <p style='left: calc(7% + 14.22vh); top: 75.7%; font-size: 4.8vh; opacity: 0.5' id='lang-code'></p>
+  <!-- In portrait screens, 60vw = 1200px in logo -> 256px in pen = 12.8vw. Scale at 1.5 -->
+  <img src='img/pen.webp' style='height: min(14.22vh, 19.2vw); left: 5.6%; top: 66.7%'>
+  <p style='left: calc(7% + min(14.22vh, 19.2vw)); top: 67.2%; font-size: min(7.2vh, 9.722vw)' id='lang-name'></p>
+  <p style='left: calc(7% + min(14.22vh, 19.2vw)); top: calc(67.2vh + min(8.5vh, 11.477vw)); font-size: min(4.8vh, 6.481vw); opacity: 0.5' id='lang-code'></p>
   <select style='left: calc(7% + 14.22vh); top: 67.2%; width: 60vh; height: 13%' id='btn-lang'>
     <optgroup label='Main languages'>
       <option value='en'>English (en)</option>
@@ -189,9 +233,28 @@ button, select {
   </select>
 </div>
 <div id='scene-startup-2' class='hidden'>
-  <div style='left: 57%; width: 40%; top: 12.5%; height: 40%; font-size: 5.6vh; display: table'><p style='display: table-cell; vertical-align: middle; line-height: 1.5'><span data-lang='default'>In the 22<sup>nd</sup> century, foxes are the playful super-wizards.</span><span data-lang='zh-Hans'>在 22 世纪，狐狸是最最古灵精怪的超级魔法师。</span><span data-lang='zh-Hant'>在 22 世紀，狐狸是最最古靈精怪的超級魔法師。</span></p></div>
-  <p style='left: 5%; width: 90%; top: 62%; font-size: 4.8vh; line-height: 1.5'><span data-lang='default'>Fox Newroll Network takes you around the world with our one-of-a-kind fox magic of “heads or tails”. Join us in our exploration!</span><span data-lang='zh-Hans'>狐研新闻社（FoxNN）用独一无二的“狐头狐尾”魔法，带你环游世界。加入我们的探索之旅吧！</span><span data-lang='zh-Hant'>狐研新聞社（FoxNN）用獨一無二的“狐頭狐尾”魔法，帶你環遊世界。加入我們的探索之旅吧！</span></p>
-  <p style='left: 5%; width: 90%; top: 88%; font-size: 4.8vh; line-height: 1.5; opacity: 0.5' id='scene-startup-press' class='maybe-hidden hidden'>Loading…</p>
+  <style>
+  #fox-nn-catchphrase {
+    left: 57%; width: 40%; top: 12.5%; height: 40%;
+    font-size: 5.6em; display: table;
+  }
+  #fox-nn-intro {
+    left: 5%; width: 90%; top: 62%;
+    font-size: 4.8em; line-height: 1.5;
+  }
+  @media (max-aspect-ratio: 3/4) {
+    #fox-nn-catchphrase {
+      left: 5%; width: 90%; top: 53%; height: 100%;
+      display: block;
+    }
+    #fox-nn-intro {
+      top: calc(53% + 20vw);
+    }
+  }
+  </style>
+  <div id='fox-nn-catchphrase'><p style='display: table-cell; vertical-align: middle; line-height: 1.5'><span data-lang='default'>In the 22<sup>nd</sup> century, foxes are the playful super-wizards.</span><span data-lang='zh-Hans'>在 22 世纪，狐狸是最最古灵精怪的超级魔法师。</span><span data-lang='zh-Hant'>在 22 世紀，狐狸是最最古靈精怪的超級魔法師。</span></p></div>
+  <p id='fox-nn-intro'><span data-lang='default'>Fox Newroll Network takes you around the world with our one-of-a-kind fox magic of “heads or tails”. Join us in our exploration!</span><span data-lang='zh-Hans'>狐研新闻社（FoxNN）用独一无二的“狐头狐尾”魔法，带你环游世界。加入我们的探索之旅吧！</span><span data-lang='zh-Hant'>狐研新聞社（FoxNN）用獨一無二的“狐頭狐尾”魔法，帶你環遊世界。加入我們的探索之旅吧！</span></p>
+  <p style='left: 5%; width: 90%; top: 88%; font-size: 4.8em; line-height: 1.5; opacity: 0.5' id='scene-startup-press' class='maybe-hidden hidden'>Loading…</p>
 </div>
 
 
@@ -266,7 +329,7 @@ button, select {
   overflow: scroll;
 }
 #newspaper-container {
-  padding: 10vh 5vh;
+  padding: 10em 4em;
   position: static !important;
 }
 #newspaper-container.unfinished {
@@ -274,6 +337,15 @@ button, select {
 }
 #newspaper-container.unfinished .newspaper-page:last-child() {
   margin-bottom: 0;
+}
+#newspaper-container p,
+#newspaper-container ul,
+#newspaper-container ol {
+  font-size: 4em;
+}
+#newspaper-container ul p,
+#newspaper-container ol p {
+  font-size: 1em;
 }
 #newspaper-container p {
   line-height: 1.5;
@@ -286,41 +358,63 @@ button, select {
 #newspaper-container h5,
 #newspaper-container li {
   line-height: 1.5;
+  margin: 1.5ex 0 0.75ex;
 }
+#newspaper-container h1 { font-size: 8em; margin-bottom: 1ex; }
+#newspaper-container h2 { font-size: 6em; }
+#newspaper-container h3 { font-size: 5.5em; }
+#newspaper-container h4 { font-size: 5em; }
+#newspaper-container h5 { font-size: 4.5em; }
+#newspaper-container h6 { font-size: 4em; }
 #newspaper-container hr {
   border: none;
-  border-top: 0.5vh rgba(128, 128, 128, 50%) solid;
+  border-top: 0.5em rgba(128, 128, 128, 50%) solid;
   margin: 2ex 0;
 }
 #newspaper-container hr.header-end {
-  border-top: 0.5vh black solid;
+  border-top: 0.5em black solid;
+  margin-bottom: 3em;
 }
 #newspaper-container a {
   color: #864;
+  font-size: 4em;
 }
 .newspaper-page {
-  border-top: 1vh black solid;
+  border-top: 1em black solid;
   padding: 1ex 0;
   margin: 10vh 0;
 }
 .newspaper-page-num {
   text-align: end;
   opacity: 0.5;
-  font-size: 8vh;
+  font-size: 8em !important;
   font-weight: bold;
   margin: 0.25ex 0 -2ex !important;
   line-height: 1 !important;
 }
+.newspaper-page .page-illust {
+  width: 50em;
+  margin: 2vh 0;
+}
+.newspaper-page .page-illust.page-illust-left {
+  float: left;
+  margin-right: 4em;
+}
+.newspaper-page .page-illust.page-illust-right {
+  float: right;
+  margin-left: 4em;
+}
+  margin-left: 4em;
 </style>
 
 <div id='newspaper-container'>
   <div id='newspaper-header' style='text-align: center'>
     <img src='img/fox-nn.webp' style='width: min(90%, 55vh); display: inline-block; margin-top: 5vh'>
-    <p style='font-size: 8vh; line-height: 1; margin: 1ex 0 0.7ex'>The Rolling Tail Gazette</p>
+    <h1 style='font-size: 7.75em; line-height: 1; margin: 1ex 0 0.7ex'>The Rolling Tail Gazette</h1>
     <p style='margin: 0 0 2ex'>
       <i><span data-lang='default'>22<sup>nd</sup> Century Ed.</span><span data-lang='zh-Hans'>22 世纪版</span><span data-lang='zh-Hant'>22 世紀版</span></i>
       <span style='opacity: 0.1'>|</span>
-      <i><span data-lang='default'>Issue </span><span data-lang='zh-Hans'>第 </span><span data-lang='zh-Hant'>第 </span><span id='newspaper-issue-num'></span><span><span data-lang='zh-Hans'>期</span><span data-lang='zh-Hant'>期</span></span></i>
+      <i><span data-lang='default'>Issue </span><span data-lang='zh-Hans'>第 </span><span data-lang='zh-Hant'>第 </span><span id='newspaper-issue-num'></span><span><span data-lang='zh-Hans'> 期</span><span data-lang='zh-Hant'> 期</span></span></i>
       <span style='opacity: 0.1'>|</span>
       <i><span data-lang='default'>Fox Newroll Network</span><span data-lang='zh-Hans'>狐研新闻社</span><span data-lang='zh-Hant'>狐研新聞社</span></i>
     </p>
@@ -487,16 +581,12 @@ const parseNewspaper = (issueNum, s) => {
     if (pageNum > 1) {
       const illustEl = document.createElement('img')
       illustEl.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' // 1-pixel transparent PNG
-      illustEl.style.width = '50vh'
+      illustEl.classList.add('page-illust')
       if ((issueNum + pageNum) % 2 === 0) {
-        illustEl.style.float = 'left'
-        illustEl.style.marginRight = '4vh'
+        illustEl.classList.add('page-illust-left')
       } else {
-        illustEl.style.float = 'right'
-        illustEl.style.marginLeft = '4vh'
+        illustEl.classList.add('page-illust-right')
       }
-      illustEl.style.marginBottom = '2vh'
-      illustEl.style.marginTop = '2vh'
       if (pageEl.children.length > 2) {
         pageEl.insertBefore(illustEl, pageEl.children[2])
       }
