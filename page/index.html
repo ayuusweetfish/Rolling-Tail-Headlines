@@ -110,6 +110,8 @@ button, select {
   margin: 0;
   padding: 0;
   color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
 }
 </style>
 
@@ -199,7 +201,7 @@ button, select {
   <img src='img/pen.webp' style='height: min(14.22vh, 19.2vw); left: 5.6%; top: 66.7%'>
   <p style='left: calc(7% + min(14.22vh, 19.2vw)); top: 67.2%; font-size: min(7.2vh, 9.722vw)' id='lang-name'></p>
   <p style='left: calc(7% + min(14.22vh, 19.2vw)); top: calc(67.2vh + min(8.5vh, 11.477vw)); font-size: min(4.8vh, 6.481vw); opacity: 0.5' id='lang-code'></p>
-  <select style='left: calc(7% + 14.22vh); top: 67.2%; width: 60vh; height: 13%' id='btn-lang'>
+  <select style='left: calc(7% + min(14.22vh, 19.2vw)); top: 67.2%; width: min(60vh, 70vw); height: min(14.22vh, 19.2vw)' id='btn-lang'>
     <optgroup label='Main languages'>
       <option value='en'>English (en)</option>
       <option value='zh-Hans'>简体中文 (zh-Hans)</option>
@@ -545,20 +547,51 @@ const updateTranslations = (parentEl, lang) => {
 }
 
 // Audio
-// Using two overlapping instances did not result in seamless loop
-// and also increased network traffic. Give up and revert to simple looping T-T
 const soundEffects = {}
+let startBackgroundAudio
 const initializeAudio = () => {
-  const audioBackground = new Audio('aud/tails-up.mp3')
-  audioBackground.volume = 0.5
-  audioBackground.addEventListener('timeupdate', (e) => {
-    const totalDur = 4 * 60 / (132 / 60)
-    if (audioBackground.currentTime >= totalDur) {
-      audioBackground.pause()
-      audioBackground.currentTime -= totalDur
+  // Background track
+  // The simple method: `Audio` element
+  // Using two overlapping instances did not result in seamless loop
+  // and also increased network traffic. Give up and revert to simple looping T-T
+  const backgroundFallback = () => {
+    const audioBackground = new Audio('aud/tails-up.mp3')
+    audioBackground.volume = 0.5
+    audioBackground.addEventListener('timeupdate', (e) => {
+      const totalDur = 4 * 60 / (132 / 60)
+      if (audioBackground.currentTime >= totalDur) {
+        audioBackground.pause()
+        audioBackground.currentTime -= totalDur
+        audioBackground.play()
+      }
+    })
+    startBackgroundAudio = () => {
       audioBackground.play()
+      // Some browsers (e.g. Firefox Android) takes touch-end/click (rather than touch-start)
+      // as the start of interaction required to auto-play. So repeatedly check.
+      const tryPlay = () => {
+        audioBackground.play()
+        if (audioBackground.paused) setTimeout(tryPlay, 200)
+      }
+      setTimeout(tryPlay, 200)
     }
-  })
+  }
+/*
+  // Try our best to use the audio source to ensure seamless looping
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+  ;(async () => {
+    const dataBuf = await (await fetch('aud/tails-up.mp3')).arrayBuffer()
+    audioCtx.decodeAudioData(dataBuf, (pcmBuf) => {
+      alert('yes' + pcmBuf.length)
+      startBackgroundAudio = () => {}
+    }, () => {
+      console.log('Could not create audio context. Falling back to the Audio element.')
+    })
+  })()
+*/
+  backgroundFallback();
+
+  // Sound effects
   for (const name of ['newspaper', 'coin']) {
     soundEffects[name] = new Audio(`aud/${name}.mp3`)
   }
@@ -908,16 +941,7 @@ if (pathMatch) {
 } else {
   // Audio and image preload is active only during play
   initializeAudio()
-  pressAnywhereOnce(() => {
-    audioBackground.play()
-    // Some browsers (e.g. Firefox Android) takes touch-end/click (rather than touch-start)
-    // as the start of interaction required to auto-play. So repeatedly check.
-    const tryPlay = () => {
-      audioBackground.play()
-      if (audioBackground.paused) setTimeout(tryPlay, 200)
-    }
-    setTimeout(tryPlay, 200)
-  })
+  pressAnywhereOnce(() => startBackgroundAudio())
   preloadImages([
     'img/coin-head.webp',
     'img/coin-tail.webp',
