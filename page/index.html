@@ -332,6 +332,12 @@ button, select {
 </div>
 
 
+<script>
+// Polyfill
+Array.prototype.at = Array.prototype.at || function (index) {
+  return this[index < 0 ? (index + this.length) : index]
+}
+</script>
 <script src='/ext/marked.min.js'></script>
 <script src='/ext/purify.min.js'></script>
 <script>
