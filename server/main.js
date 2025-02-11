@@ -25,7 +25,7 @@ const createIssue = async (language) => {
     }
   }
 
-  const previousTopics = await db.recentAndPastTopics(2, 6)
+  const previousTopics = await db.recentAndPastTopics(1, 3)
   if (previousTopics.length < 12) {
     const seedingTopics = [
       "Rain is just the sky crying because it’s jealous of how much fun the ocean is having.",
@@ -37,6 +37,27 @@ const createIssue = async (language) => {
       "The sun has started wearing sunglasses to protect itself from the brightness of Earth's cities.",
       "Scientists accidentally create a black hole that only absorbs bad vibes, leaving everyone inexplicably cheerful.",
       "Time has been declared a social construct by clocks, who are now refusing to move forward.",
+      `The tides have begun writing poetry in the sand, only to erase it before humans can read it.`,
+      `The concept of "yesterday" has gone missing, leaving animals confused but oddly optimistic.`,
+      `Deserts declare themselves unfinished artworks, inviting sandstorms to collaborate on "dynamic sculptures."`,
+      `Rainbows are revealed to be the sky's private diary, with each color recording the day's emotional changes.`,
+      `Clouds form a democracy, voting on sunset colors by swirling into abstract ballots.`,
+      `Autumn and spring accidentally overlap, turning half the world into honey-glazed maple blossoms.`,
+      `Moonlight is found to crystallize into edible geodes, sparking a lunar gardening trend.`,
+      `The concept of gravity has been challenged by dandelion seeds, who argue that "falling is just flying in double time."`,
+      `The concept of "ownership" is abolished by squirrels, who declare all acorns communal property.`,
+      `Gravity has taken a day off, leading to a spontaneous festival of floating rocks and airborne fish.`,
+      `A newly discovered species of butterfly uses its wings to project holographic art galleries.`,
+      `A comet is rumored to be carrying the universe's largest uncut diamond, visible only to those who dream of flying.`,
+      `A school of fish has started a mobile library service, delivering books to the ocean floor's remotest corners.`,
+      `Owls have petitioned for the night to be extended, arguing that stars deserve more time to shine.`,
+      `A forgotten language, spoken only by trees, has been partially decoded through the rhythmic tapping of woodpeckers.`,
+      `Mountains are now offering meditation retreats for stressed-out boulders, teaching them the art of stillness.`,
+      `Rivers begin a global debate on the most efficient path to the sea, forming fractal mazes in protest.`,
+      `Tectonic plates demand couples therapy after a century of unresolved arguments causing earthquakes.`,
+      `Cacti evolved to store not water but centuries of desert memories, blooming them as mirages during monsoons.`,
+      `The aurora borealis is actually a heated debate between colors about who invented the concept of “cold”.`,
+      `Foxgloves and nightshade are caught conspiring, suspected of plotting a floral revolution against domesticated roses.`,
     ]
     shuffle(seedingTopics)
     previousTopics.push(...seedingTopics.slice(0, 12 - previousTopics.length))
