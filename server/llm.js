@@ -82,11 +82,11 @@ const requestLLM_DeepSeek3 = requestLLM_OpenAI(
 )
 const requestLLM_GLM4 = requestLLM_OpenAI(
   'https://open.bigmodel.cn/api/paas/v4/chat/completions', 'glm-4-flash', 1.0,
-  Deno.env.get('API_KEY_ZHIPU') || prompt('API key (Zhipu):')
+  Deno.env.get('API_KEY_ZHIPU') // || prompt('API key (Zhipu):')
 )
 const requestLLM_Spark = requestLLM_OpenAI(
   'https://spark-api-open.xf-yun.com/v1/chat/completions', 'generalv3.5', 1.6,
-  Deno.env.get('API_KEY_SPARK') || prompt('API key (Spark):')
+  Deno.env.get('API_KEY_SPARK') // || prompt('API key (Spark):')
 )
 
 const retry = (fn, attempts, errorMsgPrefix) => async (...args) => {
@@ -281,15 +281,15 @@ Today's topics:
 const _generateImage = async (topic) => {
   const [, text] = await requestLLM_DeepSeek3([
     { role: 'user', content: `
-小狐正在为幻想世界报纸《九尾日报》（The Rolling Tail Gazette）的新闻报道文章制作一张小插图。根据报道标题，可以帮小狐描述一下你会怎样设计图像吗？可以尽情发挥创意，但也记得简洁一些，只需描述图像即可，不必介绍过多象征意义。另外，在不影响画面主题表现的前提下，请尽量减少画面中的内容，甚至也可以省略一些要素，保持图像与文章内容基本有关即可。谢谢~
+幻想世界报纸《九尾日报》准备发布新的新闻报道文章，请你根据报道主题制作一张小插图。可适当发挥创意，但请简洁一些，保留主题中的核心元素或人物，清晰明确地描述图像的内容，避免比喻。用英语撰写。谢谢~
 
-例：A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters".
-黑白简笔画卡通平涂风格，线条流畅、圆润、简洁，有手绘风格。画面中，一位穿着简单的人类角色，头戴一顶小帽子，身上系着多个小铃铛，正在森林中行走。周围有几只小动物，如兔子、松鼠和小鸟，好奇地围着他。背景为简单的树木和草地轮廓，使用粗线条和大色块，可加入灰色阴影，使整张图简洁、可爱。小尺寸阅览友好。
+Ex: A new law requires all humans to wear bells to alert animals of their presence, citing "too many surprise encounters".
+A hand-drawn black and white ink illustration of a cheerful girl walking through a whimsical forest, wearing a hat with bunny ears and a dress decorated with a string of hanging bells, surrounded by cute animals like squirrels, rabbits, and birds. Cartoon style, childlike charm, storybook aesthetic, line art, playful and nostalgic mood, ink wash.
 
-例：Fish are just underwater birds that forgot how to fly.
-黑白简笔画卡通平涂风格，线条流畅、圆润、简洁，有手绘风格。画面中，一条鱼和一只鸟并排站立，鱼的尾巴和鸟的翅膀相似，鱼的眼神充满好奇，鸟则显得轻松自在。背景简洁，仅用灰色阴影勾勒出水面和天空的分界线。整张图简单、可爱，适合小尺寸阅览。
+Ex: Fish are just underwater birds that forgot how to fly.
+A hand-drawn black and white ink illustration. A bird stands on the edge of a shallow, clear tide pool, looking down. Inside the pool, a fish tilts its head up, meeting the bird's gaze with a look of deep contemplation and confusion. The fish's tail fin is prominently shaped almost exactly like the bird's unfolded wing. The only background is the faint gray wash of the sky meeting the calm water's surface at the horizon. Cartoon style, childlike charm, storybook aesthetic, line art, playful and nostalgic mood, ink wash.
 
-报道标题：${topic}
+Title: ${topic}
       `.trim() }
   ])
 

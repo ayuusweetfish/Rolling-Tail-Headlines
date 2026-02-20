@@ -1,4 +1,8 @@
 ENDPOINT_FOXNN=https://paint.fox.ayu.land \
-DENO_CERT=../misc/paint-server/cert/fox_root_ca.pem \
+DENO_CERT=fox_root_ca.pem \
 API_KEY_FOXNN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-deno run -A paint.js
+API_KEY_DEEPSEEK=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
+deno run -A ${1:-main.js}
+
+# Add to /etc/hosts:
+# xx.xx.xx.xx paint.fox.ayu.land

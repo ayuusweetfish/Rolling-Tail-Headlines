@@ -112,6 +112,7 @@ const paint_FoxNN = paintQueued(async (text) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${key_FoxNN}`,
+        'Host': 'paint.fox.ayu.land',
       },
       body: JSON.stringify({ prompt: text }),
     }
