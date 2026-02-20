@@ -38,8 +38,8 @@ export const newEmptyIssue = async (uuid, timestamp, language) => {
 
 export const issueLanguage = async (uuid) => {
   const value =
-    stmt(`SELECT language FROM issues WHERE uuid = ?`).value(uuid)
-  return (value ? value[0] : null)
+    stmt(`SELECT language FROM issues WHERE uuid = ?`).get(uuid)
+  return (value ? value['language'] : null)
 }
 
 export const newTopics = async (issue_uuid, topics) => {
@@ -54,16 +54,17 @@ export const newTopics = async (issue_uuid, topics) => {
 export const topicsForIssue = async (issue_uuid) => {
   // XXX: Cannot condense?
   const values =
-    stmt(`SELECT rowid, (image IS NOT NULL) FROM topics WHERE issue_uuid = ?`)
-      .values(issue_uuid)
+    stmt(`SELECT rowid, (image IS NOT NULL) AS has_image FROM topics WHERE issue_uuid = ?`)
+      .all(issue_uuid)
+      .map((rowFields) => [rowFields['rowid'], rowFields['has_image']])
   return values
 }
 
 export const getTopicEnglishText = async (topic_id) => {
   const value =
     stmt(`SELECT text_english FROM topics WHERE rowid = ?`)
-      .value(topic_id)
-  return value
+      .get(topic_id)
+  return (value ? value['text_english'] : null)
 }
 
 export const markTopicAsSelected = async (topic_id) => {
@@ -79,22 +80,22 @@ export const selectedTopicsForIssue = async (issue_uuid) => {
   const values =
     stmt(`SELECT text_native FROM topics WHERE issue_uuid = ? AND image IS NOT NULL
           ORDER BY rowid ASC`)
-      .values(issue_uuid)
-  return values.map((rowFields) => rowFields[0])
+      .all(issue_uuid)
+  return values.map((rowFields) => rowFields['text_native'])
 }
 
 // Returns `recent_issues` * 3 + `past_issues` topics (may be less if bootstrapping)
 export const recentAndPastTopics = async (recent_issues, past_issues) => {
   const last_issue =
-    stmt(`SELECT MAX(issue_num) FROM published_issues`).value() || 0
+    stmt(`SELECT MAX(issue_num) AS n FROM published_issues`).get()['n'] || 0
 
   // Topics from the most recent issues
   const recent_issues_topics =
     stmt(`SELECT text_english FROM topics
           JOIN published_issues ON topics.issue_uuid = published_issues.issue_uuid
           WHERE issue_num >= ? AND image IS NOT NULL`)
-      .values(last_issue - recent_issues + 1)
-      .map((rowFields) => rowFields[0])
+      .all(last_issue - recent_issues + 1)
+      .map((rowFields) => rowFields['text_english'])
 
   // Topics from further past issues
   // Sample without replacement, total = `last_issue` - `recent_issues`, take = `past_issues`,
@@ -114,7 +115,7 @@ export const recentAndPastTopics = async (recent_issues, past_issues) => {
           JOIN published_issues ON topics.issue_uuid = published_issues.issue_uuid
           WHERE issue_num = ? AND image IS NOT NULL
           ORDER BY RANDOM() LIMIT 1`)
-      .value(n + 1)[0]
+      .get(n + 1)['text_english']
   )
 
   return [...past_issues_topics, ...recent_issues_topics]
@@ -126,15 +127,15 @@ export const topicImage = async (issue_num, topic_num) => {
           JOIN published_issues ON topics.issue_uuid = published_issues.issue_uuid
           WHERE issue_num = ? AND image IS NOT NULL
           ORDER BY topics.rowid ASC LIMIT 1 OFFSET ?`)
-      .values(issue_num, topic_num)
-  return value[0]
+      .all(issue_num, topic_num)
+  return value[0] ? value[0]['image'] : null
 }
 
 export const reserveIssueNumber = async (issue_uuid) => {
   const value =
     stmt(`INSERT INTO published_issues (issue_uuid, pages_content) VALUES (?, '') RETURNING issue_num`)
-      .value(issue_uuid)
-  return value[0]
+      .get(issue_uuid)
+  return value['issue_num']
 }
 
 export const publishIssue = async (issue_num, pages_content) => {
@@ -146,15 +147,15 @@ export const publishedIssueLanguage = async (issue_num) => {
   const value =
     stmt(`SELECT language FROM
           issues JOIN published_issues ON issues.uuid = published_issues.issue_uuid
-          WHERE issue_num = ?`).value(issue_num)
-  return (value ? value[0] : null)
+          WHERE issue_num = ?`).get(issue_num)
+  return (value ? value['language'] : null)
 }
 
 export const issuePagesContent = async (issue_num) => {
   const value =
     stmt(`SELECT pages_content FROM published_issues WHERE issue_num = ?`)
-      .value(issue_num)
-  return (value ? value[0] : null)
+      .get(issue_num)
+  return (value ? value['pages_content'] : null)
 }
 
 // Logging
