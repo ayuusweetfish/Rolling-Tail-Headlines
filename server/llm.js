@@ -106,7 +106,7 @@ const retry = (fn, attempts, errorMsgPrefix) => async (...args) => {
 const languageNames = {
   'en': ['English', 'English'],
   'zh-Hans': ['简体中文', 'Simplified Chinese'],
-  'zh-Hant': ['正體中文', 'Traditional Chinese'],
+  'zh-Hant': ['繁/正體中文', 'Traditional Chinese'],
   'hi': ['हिन्दी', 'Hindi'],
   'es': ['Español', 'Spanish'],
   'ar': ['اَلْعَرَبِيَّةُ', 'Modern Standard Arabic'],
