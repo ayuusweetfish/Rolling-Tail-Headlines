@@ -570,6 +570,20 @@ const soundEffects = {}
 let startBackgroundAudio
 const initializeAudio = () => {
   // Background track
+
+  // Actual action of playing. May be null until things are loaded
+  let startBackgroundAudioAction = null
+  startBackgroundAudio = () => {
+    // The action function may not be ready right away if network is taking its time.
+    // Also, some browsers (e.g. Firefox Android) takes touch-end/click (rather than touch-start)
+    // as the start of interaction required to auto-play. So repeatedly check.
+    const tryPlay = () => {
+      if (!startBackgroundAudioAction || !startBackgroundAudioAction())
+        setTimeout(tryPlay, 200)
+    }
+    tryPlay()
+  }
+
   // The simple method: `Audio` element
   // Using two overlapping instances did not result in seamless loop
   // and also increased network traffic. Give up and revert to simple looping T-T
@@ -584,31 +598,37 @@ const initializeAudio = () => {
         audioBackground.play()
       }
     })
-    startBackgroundAudio = () => {
+    startBackgroundAudioAction = () => {
       audioBackground.play()
-      // Some browsers (e.g. Firefox Android) takes touch-end/click (rather than touch-start)
-      // as the start of interaction required to auto-play. So repeatedly check.
-      const tryPlay = () => {
-        audioBackground.play()
-        if (audioBackground.paused) setTimeout(tryPlay, 200)
-      }
-      setTimeout(tryPlay, 200)
+      return !audioBackground.paused
     }
   }
-/*
+
   // Try our best to use the audio source to ensure seamless looping
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-  ;(async () => {
-    const dataBuf = await (await fetch('aud/tails-up.mp3')).arrayBuffer()
-    audioCtx.decodeAudioData(dataBuf, (pcmBuf) => {
-      alert('yes' + pcmBuf.length)
-      startBackgroundAudio = () => {}
-    }, () => {
-      console.log('Could not create audio context. Falling back to the Audio element.')
-    })
-  })()
-*/
-  backgroundFallback();
+  if (window.AudioContext || window.webkitAudioContext) {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    let startReal = null
+    ;(async () => {
+      const dataBuf = await (await fetch('aud/tails-up.mp3')).arrayBuffer()
+      audioCtx.decodeAudioData(dataBuf, (pcmBuf) => {
+        const s1 = audioCtx.createBufferSource()
+        s1.buffer = pcmBuf
+        s1.loop = true
+        s1.loopStart = 0
+        s1.loopEnd = 4 * 60 / (132 / 60)
+        s1.connect(audioCtx.destination)
+        startBackgroundAudioAction = () => {
+          s1.start()
+          return true
+        }
+      }, () => {
+        console.log('Could not create audio context. Falling back to the Audio element.')
+        backgroundFallback()
+      })
+    })()
+  } else {
+    backgroundFallback()
+  }
 
   // Sound effects
   for (const name of ['newspaper', 'coin']) {
