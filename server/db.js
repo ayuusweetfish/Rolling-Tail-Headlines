@@ -1,6 +1,6 @@
-import { Database } from 'jsr:@db/sqlite@0.12'
+import { DatabaseSync } from 'node:sqlite'
 
-const db = new Database('fox.db')
+const db = new DatabaseSync('fox.db')
 
 const cachedStmts = {}
 const stmt = (s) => (cachedStmts[s] || (cachedStmts[s] = db.prepare(s)))
