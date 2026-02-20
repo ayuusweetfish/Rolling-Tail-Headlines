@@ -1,13 +1,17 @@
 const log = (...args) => console.log(new Date().toISOString(), ...args)
 
-const callLocalGenServer = async (text) => {
-  const req = await fetch(`http://127.0.0.1:26219/v1/images/generations`, {
+const ACCESS_KEY = Deno.env.get('ACCESS_KEY')
+const LOCAL_ENDPOINT = Deno.env.get('LOCAL_ENDPOINT')
+  || `http://127.0.0.1:26219/v1/images/generations`
+
+const callLocalGenServer = async (text, seed) => {
+  const req = await fetch(LOCAL_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: {
+    body: JSON.stringify({
       prompt: text,
-      seed: 42,
-    },
+      seed,
+    }),
   })
   const obj = await req.json()
   return Uint8Array.fromBase64(obj['data'][0]['b64_json'])
@@ -15,15 +19,26 @@ const callLocalGenServer = async (text) => {
 
 const tasks = new Map()
 
+const hash = (s) => {
+  let h = 0
+  for (let i = 0; i < s.length; i++)
+    h = Math.imul(h, 997) + s.charCodeAt(i)
+  return h & 0x7fffffff
+}
+
 const handler = async (req) => {
   const url = new URL(req.url)
+
+  if (ACCESS_KEY && req.headers.get('Authorization') !== `Bearer ${ACCESS_KEY}`)
+    throw new Error(`[401] Incorrect access key`)
 
   if (req.method === 'POST' && url.pathname === '/paint') {
     const obj = await req.json()
     const text = obj.prompt
     const taskId = crypto.randomUUID()
-    const startedAt = Date.now()
-    console.log('Spawn task', taskId, text)
+    const startedAt = new Date().toISOString()
+    const seed = hash(taskId + text)
+    log('Task spawn', taskId, seed)
 
     tasks.set(taskId, {
       status: 'running',
@@ -32,19 +47,21 @@ const handler = async (req) => {
 
     ;(async () => {
       try {
-        const image = await callLocalGenServer(text)
+        const imageBuffer = await callLocalGenServer(text, seed)
+        log('Task finished', taskId)
         tasks.set(taskId, {
           status: 'finished',
           result: imageBuffer,
           startedAt,
-          finishedAt: Date.now(),
+          finishedAt: new Date().toISOString(),
         })
       } catch (error) {
+        log('Task error', taskId, error)
         tasks.set(taskId, {
           status: 'error',
           message: error.message,
           startedAt,
-          finishedAt: Date.now(),
+          finishedAt: new Date().toISOString(),
         })
       }
       setTimeout(() => {
@@ -88,7 +105,10 @@ const handler = async (req) => {
     const task = tasks.get(taskId)
     if (!task) throw new Error(`[404] Task ${taskId} does not exist`)
 
-    return new Response(new Uint8Array([48, 49, 50]))
+    if (task.status !== 'finished')
+      throw new Error(`[400] Task not finished (status ${task.status})`)
+
+    return new Response(task.result)
   }
 
   throw new Error('[404] Void space, please return')

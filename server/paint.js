@@ -104,19 +104,29 @@ const paint_Wanx21Turbo = paintQueued(async (text) => {
 })
 
 const endpoint_FoxNN = 'http://localhost:26220'
+const key_FoxNN = Deno.env.get('API_KEY_FOXNN') || prompt('API key (FoxNN):')
 const paint_FoxNN = paintQueued(async (text) => {
-  const imageResponse = await loggedFetchJSON(
+  const resp = await loggedFetchJSON(
     `${endpoint_FoxNN}/paint`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key_FoxNN}`,
+      },
       body: JSON.stringify({ prompt: text }),
     }
   )
-  return imageResponse.task_id
+  if (!resp.task_id) {
+    throw new Error(`Cannot create image task: ${resp.message}`)
+  }
+  return resp.task_id
 }, async (taskId) => {
   const statusResponse = await loggedFetchJSON(
     `${endpoint_FoxNN}/status/${taskId}`, {
       method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${key_FoxNN}`,
+      },
     }
   )
   if (statusResponse.status === 'finished') {
