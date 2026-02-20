@@ -50,7 +50,21 @@ const paint_CogView3Flash = async (text) => {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const paint_Wanx21Turbo = async (text) => {
+const paintQueued = (taskCreateFn, taskStatusFn) => async (text) => {
+  const taskId = await taskCreateFn(text)
+  console.log(`Task ID: ${taskId}`)
+
+  while (true) {
+    const url = await taskStatusFn(taskId)
+    if (url) {
+      const blob = await (await fetch(url)).blob()
+      return await normalizeImage(await blob.arrayBuffer())
+    }
+    await delay(1000)
+  }
+}
+
+const paint_Wanx21Turbo = paintQueued(async (text) => {
   const key = Deno.env.get('API_KEY_ALIYUN') || prompt('API key (Aliyun Bailian):')
   const imageResponse = await loggedFetchJSON(
     'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis', {
@@ -67,33 +81,56 @@ const paint_Wanx21Turbo = async (text) => {
       }),
     }
   )
-  const taskId = imageResponse.output.task_id
-  console.log(taskId)
-
-  while (true) {
-    const taskResponse = await loggedFetchJSON(
-      `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bearer' + key,
-        },
-      }
-    )
-    if (taskResponse.output.task_status === 'SUCCEEDED') {
-      const url = taskResponse.output.results[0].url
-      const blob = await (await fetch(url)).blob()
-      return await normalizeImage(await blob.arrayBuffer())
-    } else if (
-      taskResponse.output.task_status !== 'PENDING' &&
-      taskResponse.output.task_status !== 'RUNNING'
-    ) {
-      throw new Error('Image task failed')
+  return imageResponse.output.task_id
+}, async (taskId) => {
+  const key = Deno.env.get('API_KEY_ALIYUN') || prompt('API key (Aliyun Bailian):')
+  const statusResponse = await loggedFetchJSON(
+    `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer' + key,
+      },
     }
-    await delay(1000)
+  )
+  if (statusResponse.output.task_status === 'SUCCEEDED') {
+    return statusResponse.output.results[0].url
+  } else if (
+    statusResponse.output.task_status !== 'PENDING' &&
+    statusResponse.output.task_status !== 'RUNNING'
+  ) {
+    throw new Error('Image task failed')
   }
-}
+  return null
+})
 
-const paint_provider = paint_Wanx21Turbo // paint_CogView3Flash
+const endpoint_FoxNN = 'http://localhost:26220'
+const paint_FoxNN = paintQueued(async (text) => {
+  const imageResponse = await loggedFetchJSON(
+    `${endpoint_FoxNN}/paint`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: text }),
+    }
+  )
+  return imageResponse.task_id
+}, async (taskId) => {
+  const statusResponse = await loggedFetchJSON(
+    `${endpoint_FoxNN}/status/${taskId}`, {
+      method: 'GET',
+    }
+  )
+  if (statusResponse.url) {
+    return statusResponse.url
+  } else if (statusResponse.message) {
+    throw new Error(`Image task failed: ${statusResponse.message}`)
+  }
+  return null
+})
+
+const paint_provider =
+  paint_FoxNN
+  // paint_Wanx21Turbo
+  // paint_CogView3Flash
 const paintConcurrency = 2
 
 const queue = []  // [[text, resolve, reject]; N]
