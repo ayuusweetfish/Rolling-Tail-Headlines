@@ -1,0 +1,4 @@
+ENDPOINT_FOXNN=https://paint.fox.ayu.land \
+DENO_CERT=../misc/paint-server/cert/fox_root_ca.pem \
+API_KEY_FOXNN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
+deno run -A paint.js

@@ -129,3 +129,4 @@ Deno.serve({ port: serverPort }, async (req) => {
     return new Response(JSON.stringify({ message }), { status })
   }
 })
+log('Starting! ^≥ﻌ-^')

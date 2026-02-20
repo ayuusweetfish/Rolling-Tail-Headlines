@@ -55,9 +55,9 @@ const paintQueued = (taskCreateFn, taskStatusFn) => async (text) => {
   console.log(`Task ID: ${taskId}`)
 
   while (true) {
-    const url = await taskStatusFn(taskId)
-    if (url) {
-      const blob = await (await fetch(url)).blob()
+    const bufferResp = await taskStatusFn(taskId)
+    if (bufferResp) {
+      const blob = await bufferResp.blob()
       return await normalizeImage(await blob.arrayBuffer())
     }
     await delay(1000)
@@ -93,7 +93,7 @@ const paint_Wanx21Turbo = paintQueued(async (text) => {
     }
   )
   if (statusResponse.output.task_status === 'SUCCEEDED') {
-    return statusResponse.output.results[0].url
+    return await fetch(statusResponse.output.results[0].url)
   } else if (
     statusResponse.output.task_status !== 'PENDING' &&
     statusResponse.output.task_status !== 'RUNNING'
@@ -103,7 +103,7 @@ const paint_Wanx21Turbo = paintQueued(async (text) => {
   return null
 })
 
-const endpoint_FoxNN = 'http://localhost:26220'
+const endpoint_FoxNN = Deno.env.get('ENDPOINT_FOXNN') || 'http://localhost:26220'
 const key_FoxNN = Deno.env.get('API_KEY_FOXNN') || prompt('API key (FoxNN):')
 const paint_FoxNN = paintQueued(async (text) => {
   const resp = await loggedFetchJSON(
@@ -130,7 +130,13 @@ const paint_FoxNN = paintQueued(async (text) => {
     }
   )
   if (statusResponse.status === 'finished') {
-    return `${endpoint_FoxNN}/result/${taskId}`
+    return await fetch(
+      `${endpoint_FoxNN}/result/${taskId}`, {
+        headers: {
+          'Authorization': `Bearer ${key_FoxNN}`,
+        },
+      }
+    )
   } else if (statusResponse.status === 'error') {
     throw new Error(`Image task failed: ${statusResponse.message}`)
   }
