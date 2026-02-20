@@ -570,6 +570,7 @@ const soundEffects = {}
 let startBackgroundAudio
 const initializeAudio = () => {
   // Background track
+  const loopDur = 4 * 60 / (132 / 60)
 
   // Actual action of playing. May be null until things are loaded
   let startBackgroundAudioAction = null
@@ -591,10 +592,9 @@ const initializeAudio = () => {
     const audioBackground = new Audio('aud/tails-up.mp3')
     audioBackground.volume = 0.5
     audioBackground.addEventListener('timeupdate', (e) => {
-      const totalDur = 4 * 60 / (132 / 60)
-      if (audioBackground.currentTime >= totalDur) {
+      if (audioBackground.currentTime >= loopDur) {
         audioBackground.pause()
-        audioBackground.currentTime -= totalDur
+        audioBackground.currentTime -= loopDur
         audioBackground.play()
       }
     })
@@ -605,20 +605,27 @@ const initializeAudio = () => {
   }
 
   // Try our best to use the audio source to ensure seamless looping
-  if (window.AudioContext || window.webkitAudioContext) {
+  // Safari does not want to play this...?? >-<
+  if (!navigator.userAgent.match(/Safari\//g) &&
+      (window.AudioContext || window.webkitAudioContext)) {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
     let startReal = null
     ;(async () => {
       const dataBuf = await (await fetch('aud/tails-up.mp3')).arrayBuffer()
       audioCtx.decodeAudioData(dataBuf, (pcmBuf) => {
-        const s1 = audioCtx.createBufferSource()
-        s1.buffer = pcmBuf
-        s1.loop = true
-        s1.loopStart = 0
-        s1.loopEnd = 4 * 60 / (132 / 60)
-        s1.connect(audioCtx.destination)
+        const createNode = (t) => {
+          const s = audioCtx.createBufferSource()
+          s.buffer = pcmBuf
+          s.connect(audioCtx.destination)
+          s.start(t)
+          s.onended = () => createNode(t + loopDur * 2)
+        }
         startBackgroundAudioAction = () => {
-          s1.start()
+          audioCtx.resume().then(() => {
+            let t = audioCtx.currentTime
+            createNode(t)
+            createNode(t + loopDur)
+          })
           return true
         }
       }, () => {
