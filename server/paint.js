@@ -119,9 +119,9 @@ const paint_FoxNN = paintQueued(async (text) => {
       method: 'GET',
     }
   )
-  if (statusResponse.url) {
-    return statusResponse.url
-  } else if (statusResponse.message) {
+  if (statusResponse.status === 'finished') {
+    return `${endpoint_FoxNN}/result/${taskId}`
+  } else if (statusResponse.status === 'error') {
     throw new Error(`Image task failed: ${statusResponse.message}`)
   }
   return null
@@ -165,5 +165,6 @@ export const paint = (text) => new Promise((resolve, reject) => {
 
 // ======== Test run ======== //
 if (import.meta.main) {
-  await Deno.writeFile('1.webp', await paint('黑白简笔画卡通平涂风格，线条流畅、圆润、简洁，有手绘风格。画面中，一位穿着简单的人类角色，头戴一顶小帽子，身上系着多个小铃铛，正在森林中行走。周围有几只小动物，如兔子、松鼠和小鸟，好奇地围着他。背景为简单的树木和草地轮廓，使用粗线条和大色块，可加入灰色阴影，使整张图简洁、可爱。小尺寸阅览友好。'))
+  // await Deno.writeFile('1.webp', await paint('黑白简笔画卡通平涂风格，线条流畅、圆润、简洁，有手绘风格。画面中，一位穿着简单的人类角色，头戴一顶小帽子，身上系着多个小铃铛，正在森林中行走。周围有几只小动物，如兔子、松鼠和小鸟，好奇地围着他。背景为简单的树木和草地轮廓，使用粗线条和大色块，可加入灰色阴影，使整张图简洁、可爱。小尺寸阅览友好。'))
+  await Deno.writeFile('1.webp', await paint('A hand-drawn black and white ink illustration of a cheerful girl walking through a whimsical forest, wearing a hat with bunny ears and a dress decorated with a string of hanging bells, surrounded by cute animals like squirrels, rabbits, and birds. Cartoon style, childlike charm, storybook aesthetic, line art, playful and nostalgic mood, ink wash.'))
 }
