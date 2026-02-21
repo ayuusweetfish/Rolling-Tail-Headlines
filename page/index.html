@@ -616,7 +616,7 @@ const initializeAudio = () => {
 
   // Try our best to use the audio source to ensure seamless looping
   // Safari does not want to play this...?? >-<
-  if (!navigator.userAgent.match(/Safari\//g) &&
+  if (!navigator.userAgent.match(/^.*(iPhone|iPad|iOS|macOS).*Safari\//) &&
       (window.AudioContext || window.webkitAudioContext)) {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
     let startReal = null
@@ -644,6 +644,7 @@ const initializeAudio = () => {
       })
     })()
   } else {
+    console.log('Browser does not properly support AudioContext. Falling back to the Audio element.')
     backgroundFallback()
   }
 
