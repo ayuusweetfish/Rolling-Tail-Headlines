@@ -388,6 +388,7 @@ button, select {
 #newspaper-container p {
   line-height: 1.5;
   margin: 1ex 0;
+  hyphens: auto;
 }
 #newspaper-container h1,
 #newspaper-container h2,
@@ -397,6 +398,7 @@ button, select {
 #newspaper-container li {
   line-height: 1.5;
   margin: 1.5ex 0 0.75ex;
+  hyphens: auto;
 }
 #newspaper-container h1 { font-size: 8em; margin-bottom: 1ex; }
 #newspaper-container h2 { font-size: 6em; }
@@ -734,6 +736,8 @@ const playNewspaper = async (issueNum, autoScroll) => {
   const lang = await (await fetch(`${api}/issue/${issueNum}/lang`)).text()
   updateTranslations(header, lang)
   updateTranslations(permalinkTempl, lang)
+
+  container.setAttribute('lang', lang)
 
   parseNewspaper(issueNum, '')
 
