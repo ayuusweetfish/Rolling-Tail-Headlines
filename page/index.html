@@ -367,7 +367,7 @@ button, select {
 <style>
 #scene-newspaper {
   height: 100%;
-  overflow: scroll;
+  overflow: hidden scroll;
 }
 #newspaper-container {
   padding: 10em 4em;
@@ -417,7 +417,7 @@ button, select {
 }
 #newspaper-container a {
   color: #864;
-  font-size: 4em;
+  font-size: 4rem;
 }
 .newspaper-page {
   border-top: 1em black solid;
@@ -447,20 +447,19 @@ button, select {
   float: right;
   margin-left: 4em;
 }
-  margin-left: 4em;
 </style>
 
 <div id='newspaper-container'>
   <div id='newspaper-header' style='text-align: center'>
     <img src='img/fox-nn.webp' style='width: min(90%, 55vh); display: inline-block; margin-top: 5vh'>
     <h1 style='font-size: 7.75em; line-height: 1; margin: 1ex 0 0.7ex'><span data-lang='default'>The Rolling Tail Gazette</span><span data-lang='zh-Hans' style='letter-spacing: 0.1em'>— 九尾日报 —</span><span data-lang='zh-Hant' style='letter-spacing: 0.1em'>— 九尾日報 —</span></h1>
-    <p style='margin: 0 -50% 2ex'>
+    <p style='margin: 0 -50% 2ex'><span style='display: inline-block'>
       <i><span data-lang='default'>22<sup>nd</sup> Century Ed.</span><span data-lang='zh-Hans'>22 世纪版</span><span data-lang='zh-Hant'>22 世紀版</span></i>
       <span style='opacity: 0.1'>|</span>
       <i><span data-lang='default'>Issue </span><span data-lang='zh-Hans'>第 </span><span data-lang='zh-Hant'>第 </span><span id='newspaper-issue-num'></span><span><span data-lang='zh-Hans'> 期</span><span data-lang='zh-Hant'> 期</span></span></i>
       <span style='opacity: 0.1'>|</span>
       <i><span data-lang='default'>Fox Newroll Network</span><span data-lang='zh-Hans'>狐研新闻社</span><span data-lang='zh-Hant'>狐研新聞社</span></i>
-    </p>
+    </span></p>
     <hr class='header-end'>
   </div>
   <div id='newspaper-permalink'>
