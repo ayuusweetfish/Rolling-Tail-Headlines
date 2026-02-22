@@ -1,22 +1,20 @@
 # The Rolling Tail Headlines
 
-[**Have a try!**](https://fox.ayu.land) | [Itch.io page](https://ayuusweetfish.itch.io/rolling-tail-headlines)
+[**Have a try!**](https://fox.ayu.land) | [Itch.io page](https://ayuusweetfish.itch.io/rolling-tail-headlines) | [Personal wiki page](https://fox.ayu.land/fox)
 
-Submission to [Mini Jam 176: Foxes](https://itch.io/jam/mini-jam-176-foxes), with a limitation of **flipping a coin as a mechanic**.
+Submission to [Mini Jam 176: Foxes](https://itch.io/jam/mini-jam-176-foxes), with a limitation of *flipping a coin as a mechanic*.
 
 ---
 
 **Rainbow Revealed to be Sky's Diary?**
 
-**Flamingoes Going On Strike?**
+**Flamingoes Go on Strike, Disbanding Ministry of Silly Walks?**
 
-**Ants Take Gold in Tiny Olympics?**
+**Mushrooms to Build the Next Glow-Based Comms Network?**
 
-**Humans Required to Wear Bells Outside?**
+Inquiring minds alike, Fox Newroll Network (FoxNN) has you covered! In the 22nd century, foxes are the playful super-wizards. They traverse the world on a daily basis, observing, and discovering through a mechanism known as “heads or tails” — no, it’s not coin flipping, but a secret fox magic outside of the reach of languages\~
 
-Inquiring minds alike, Fox Newroll Network (FoxNN) gets you covered! In the 22nd century, foxes are the playful super-wizards. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails' (no, it's not coin flipping, just some fox magic outside of the reach of languages).
-
-Bring your cup of moonbeam tea, join the foxes in their inquiries for this issue.
+Bring your cup of moonbeam tea, join the foxes in their inquiries for this issue!
 
 *A text-based exploration, with a grain of Automatic Imagination. Supports many types of input, with controls explained in-game. Has sounds; please use the browser's tab mute function to toggle it.*
 
