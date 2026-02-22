@@ -997,11 +997,14 @@ const playPermalink = async (issueNum) => {
   document.getElementById('scene-newspaper').classList.remove('hidden')
 }
 const pathMatch = new URL(window.location.href).pathname.match(/\/([0-9]+)$/)
+initializeAudio()
 if (pathMatch) {
   playPermalink(parseInt(pathMatch[1], 10))
+  pressAnywhereOnce(() => {
+    startBackgroundAudio()
+    playSfx('newspaper')
+  })
 } else {
-  // Audio and image preload is active only during play
-  initializeAudio()
   pressAnywhereOnce(() => startBackgroundAudio())
   preloadImages([
     'img/coin-head.webp',
