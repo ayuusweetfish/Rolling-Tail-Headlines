@@ -665,6 +665,7 @@ const permalinkTempl = document.getElementById('newspaper-permalink')
 permalinkTempl.remove()
 let newspaperImagesDone = []  // Updated by `playNewspaper`
 let newspaperImages = []  // Filled by this function, `parseNewspaper`, in case of enlengthened blockage
+marked.use({ breaks: true })
 const parseNewspaper = (issueNum, s) => {
   const container = document.getElementById('newspaper-container')
   container.replaceChildren()
