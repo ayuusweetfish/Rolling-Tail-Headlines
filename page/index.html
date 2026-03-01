@@ -933,7 +933,8 @@ const playScene = async (index) => {
       await delay(1000)
       const issueNum = parseInt(await flipResponse)
       playSfx('newspaper')
-      playNewspaper(issueNum, /* playNewspaper */ true)
+      window.history.replaceState(null, '', `/${issueNum}`)
+      playNewspaper(issueNum, /* autoScroll */ true)
       document.getElementById('scene-newspaper').classList.remove('hidden')
     } else {
       playScene(index + 1)
