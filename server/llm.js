@@ -29,7 +29,16 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages
 
   if (isStreaming) {
     const t0 = Date.now()
-    const es = createEventSource({ url: endpoint, ...options })
+    const es = createEventSource({
+      url: endpoint,
+      fetch: async (url, opts) => {
+        const response = await fetch(url, opts)
+        if (response.status !== 200)
+          throw new Error(`AI server returned HTTP status ${response.status}`)
+        return response
+      },
+      ...options
+    })
     let buffer = ''
 
     return {
