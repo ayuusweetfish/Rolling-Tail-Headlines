@@ -716,17 +716,20 @@ let newspaperAtBottom = true
 let lastAtBottomTrue = 0
 const sceneNewspaper = document.getElementById('scene-newspaper')
 const newspaperContainer = document.getElementById('newspaper-container')
-sceneNewspaper.addEventListener('wheel', (e) => {
+const scrollHandler = (e) => {
   const H = sceneNewspaper.clientHeight
   const h = newspaperContainer.clientHeight
-  const currentAtBottom = (sceneNewspaper.scrollTop >= h - H * 1.2)
+  const currentAtBottom = (sceneNewspaper.scrollTop >= h - H * 1.04)
+  console.log('scrollend', (h - sceneNewspaper.scrollTop) / H)
   if (!currentAtBottom && lastAtBottomTrue < Date.now() - 500) {
     newspaperAtBottom = false
   } else if (currentAtBottom) {
     newspaperAtBottom = true
     lastAtBottomTrue = Date.now()
   }
-})
+}
+sceneNewspaper.addEventListener('scrollend', scrollHandler)
+sceneNewspaper.addEventListener('wheel', scrollHandler)
 const playNewspaper = async (issueNum, autoScroll) => {
   const scene = document.getElementById('scene-newspaper')
   const container = document.getElementById('newspaper-container')
