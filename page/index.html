@@ -721,7 +721,6 @@ const scrollHandler = (e) => {
   const H = sceneNewspaper.clientHeight
   const h = newspaperContainer.clientHeight
   const currentAtBottom = (sceneNewspaper.scrollTop >= h - H * 1.04)
-  console.log('scrollend', (h - sceneNewspaper.scrollTop) / H)
   if (!currentAtBottom && lastAtBottomTrue < Date.now() - 500) {
     newspaperAtBottom = false
   } else if (currentAtBottom) {
@@ -731,7 +730,7 @@ const scrollHandler = (e) => {
 }
 sceneNewspaper.addEventListener('scrollend', scrollHandler)
 sceneNewspaper.addEventListener('wheel', scrollHandler)
-const playNewspaper = async (issueNum, autoScroll) => {
+const playNewspaper = async (issueNum) => {
   const scene = document.getElementById('scene-newspaper')
   const container = document.getElementById('newspaper-container')
   container.classList.add('unfinished')
@@ -757,19 +756,31 @@ const playNewspaper = async (issueNum, autoScroll) => {
     })()
   }
 
+  let startedAt = Date.now()
+  let autoScroll = false
+
   const reader = (await fetch(`${api}/issue/${issueNum}/raw`)).body.getReader()
+  const decoder = new TextDecoder()
   const chunks = []
   while (true) {
     const { done, value: chunk } = await reader.read()
     if (done) { break }
-    chunks.push((new TextDecoder()).decode(chunk))
+
+    // Enable auto scroll if streaming (crude check)
+    if (!autoScroll && Date.now() - startedAt >= 1000) {
+      autoScroll = true
+      newspaperAtBottom = true
+    }
+
+    chunks.push(decoder.decode(chunk))
+      // `stream: true` is not required, because server splits at codepoint boundaries
     parseNewspaper(issueNum, chunks.join(''))
     if (autoScroll && newspaperAtBottom)
-      scene.scrollTo({
+      requestAnimationFrame(() => scene.scrollTo({
         top: container.clientHeight - scene.clientHeight,
         left: 0,
         behavior: 'smooth',
-      })
+      }))
   }
 
   // Link
@@ -932,11 +943,11 @@ const playScene = async (index) => {
     if (index === 2) {
       document.getElementById('scene-game').classList.add('hidden')
       await delay(1000)
+      document.getElementById('scene-newspaper').classList.remove('hidden')
       const issueNum = parseInt(await flipResponse)
       playSfx('newspaper')
       window.history.replaceState(null, '', `/${issueNum}`)
-      playNewspaper(issueNum, /* autoScroll */ true)
-      document.getElementById('scene-newspaper').classList.remove('hidden')
+      playNewspaper(issueNum)
     } else {
       playScene(index + 1)
     }
@@ -997,8 +1008,8 @@ const playPermalink = async (issueNum) => {
   document.getElementById('scene-startup-1').remove()
   document.getElementById('scene-startup-2').remove()
   document.getElementById('scene-game').remove()
-  await playNewspaper(issueNum)
   document.getElementById('scene-newspaper').classList.remove('hidden')
+  await playNewspaper(issueNum)
 }
 const pathMatch = new URL(window.location.href).pathname.match(/\/([0-9]+)$/)
 initializeAudio()
