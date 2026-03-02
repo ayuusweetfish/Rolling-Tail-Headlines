@@ -224,7 +224,7 @@ const serveReq = async (req) => {
                   controller.enqueue((new TextEncoder()).encode(chunks[i]))
                 lastWrittenChunk = n
               } catch (e) {
-                controller.close()
+                try { controller.close() } catch (e) { }
                 return
               }
               if (isFinished) controller.close()
@@ -232,7 +232,9 @@ const serveReq = async (req) => {
             s.listeners.push(fn)
           },
         })
-        return new Response(stream)
+        return new Response(stream, {
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        })
       }
     }
     const matchLang = url.pathname.match(/^\/issue\/([0-9]{1,10})\/lang$/)
