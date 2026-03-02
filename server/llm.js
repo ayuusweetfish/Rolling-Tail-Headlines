@@ -195,12 +195,12 @@ export const askForNewspaper = async function* (language, issueNumber, topics) {
     language === 'zh-Hant' ? '九尾日報' :
     'The Rolling Tail Gazette')
   let translationFoxNN = translate(
-    language === 'zh-Hans' ? '狐研新闻社' :
-    language === 'zh-Hant' ? '狐研新聞社' :
+    language === 'zh-Hans' ? ' (translation: **狐研新闻社**)' :
+    language === 'zh-Hant' ? ' (translation: **狐研新聞社**)' :
     '')
   let translationHeadsOrTails = translate(
-    language === 'zh-Hans' ? '狐头狐尾魔法' :
-    language === 'zh-Hant' ? '狐頭狐尾魔法' :
+    language === 'zh-Hans' ? ' (translation: **狐头狐尾魔法**)' :
+    language === 'zh-Hant' ? ' (translation: **狐頭狐尾魔法**)' :
     '')
   const frontPagePrompt = `
 In the 22nd century, foxes are the playful super-wizards. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails'${translationHeadsOrTails} (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN)${translationFoxNN} is a news agent that regularly publishes reports obtained this way.
@@ -212,6 +212,7 @@ Header:
 == *22nd Century Edition* | *Issue ${issueNumber}* | *Fox Newroll Network* ==${
   language === 'en' ? '' : (
     `\n\nAfter this header, continue in **${langNameFull}**.`
+    + (language !== 'en' ? ' Do not use English.' : '')
     + (
       language !== 'en' && !translationFoxNN ?
         ' Please do not translate the title and FoxNN; use the original English names.' :
@@ -257,7 +258,7 @@ Today's topics:
   const innerPagesStream = await requestLLM_DeepSeek3([
     { role: 'user', content: frontPagePrompt },
     { role: 'assistant', content: frontPageText },
-    { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Start each page with a first-level title; use subtitles along the way if you feel the need. Do not include extra headers or footers; do not include the page number. Write at least a few paragraphs for each page. Separate each page with a horizontal rule (---), and do not use it amidst a page. Start at page 2; do not repeat the front page.` },
+    { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Start each page with a first-level title; use subtitles along the way if you feel the need. Write textual content only; do not include extra headers, footers, or the page number. Write at least a few paragraphs for each page. Put a horizontal rule (---) after each page except the last one, and avoid it elsewhere. Start at page 2; do not repeat the front page.` },
   ], true)
 
   // Replace the first two horizontal rules with page separators
