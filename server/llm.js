@@ -11,20 +11,20 @@ const loggedFetchJSON = async (url, options) => {
   return JSON.parse(respText)
 }
 
-const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages, isStreaming) => {
+const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (messages, isStreaming) => {
   const options = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + key,
     },
-    body: JSON.stringify({
+    body: JSON.stringify(Object.assign({
       model: model,
       messages,
       max_tokens: 8000,
       temperature: temperature,
       stream: (isStreaming ? true : undefined),
-    }),
+    }, extra)),
   }
 
   if (isStreaming) {
@@ -86,16 +86,19 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key) => async (messages
 }
 
 const requestLLM_DeepSeek3 = requestLLM_OpenAI(
-  'https://api.deepseek.com/chat/completions', 'deepseek-chat', 1.6,
-  Deno.env.get('API_KEY_DEEPSEEK') || prompt('API key (DeepSeek):')
+  'https://api.deepseek.com/chat/completions', 'deepseek-v4-flash', 1.6,
+  Deno.env.get('API_KEY_DEEPSEEK') || prompt('API key (DeepSeek):'),
+  { thinking: { type: 'disabled' } }
 )
 const requestLLM_GLM4 = requestLLM_OpenAI(
   'https://open.bigmodel.cn/api/paas/v4/chat/completions', 'glm-4-flash', 1.0,
-  Deno.env.get('API_KEY_ZHIPU') // || prompt('API key (Zhipu):')
+  Deno.env.get('API_KEY_ZHIPU') /* || prompt('API key (Zhipu):') */,
+  null
 )
 const requestLLM_Spark = requestLLM_OpenAI(
   'https://spark-api-open.xf-yun.com/v1/chat/completions', 'generalv3.5', 1.6,
-  Deno.env.get('API_KEY_SPARK') // || prompt('API key (Spark):')
+  Deno.env.get('API_KEY_SPARK') /* || prompt('API key (Spark):') */,
+  null
 )
 
 const retry = (fn, attempts, errorMsgPrefix) => async (...args) => {
