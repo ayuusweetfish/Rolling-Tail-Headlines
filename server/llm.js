@@ -86,7 +86,7 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (m
 }
 
 const requestLLM_DeepSeek3 = requestLLM_OpenAI(
-  'https://api.deepseek.com/chat/completions', 'deepseek-v4-flash', 1.6,
+  'https://api.deepseek.com/chat/completions', 'deepseek-chat', 1.0,
   Deno.env.get('API_KEY_DEEPSEEK') || prompt('API key (DeepSeek):'),
   { thinking: { type: 'disabled' } }
 )
