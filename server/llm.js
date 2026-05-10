@@ -11,7 +11,7 @@ const loggedFetchJSON = async (url, options) => {
   return JSON.parse(respText)
 }
 
-const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (messages, isStreaming) => {
+const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (messages, isStreaming, overrideTemp) => {
   const options = {
     method: 'POST',
     headers: {
@@ -22,7 +22,7 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (m
       model: model,
       messages,
       max_tokens: 8000,
-      temperature: temperature,
+      temperature: overrideTemp || temperature,
       stream: (isStreaming ? true : undefined),
     }, extra)),
   }
@@ -85,8 +85,8 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (m
   }
 }
 
-const requestLLM_DeepSeek3 = requestLLM_OpenAI(
-  'https://api.deepseek.com/chat/completions', 'deepseek-chat', 1.0,
+const requestLLM_DeepSeek4 = requestLLM_OpenAI(
+  'https://api.deepseek.com/chat/completions', 'deepseek-v4-flash', 0.9,
   Deno.env.get('API_KEY_DEEPSEEK') || prompt('API key (DeepSeek):'),
   { thinking: { type: 'disabled' } }
 )
@@ -162,7 +162,7 @@ const _askForTopicSuggestions = async (previousTopics, language) => {
   const langNameFull = getLangNameFull(language)
   if (!langNameFull) return null
 
-  const [_, text] = await requestLLM_DeepSeek3([
+  const [_, text] = await requestLLM_DeepSeek4([
     { role: 'user', content: `
 In the 22nd century, foxes are the playful super-wizards. They traverse the world on a daily basis and report on discoveries, social activities, and political/economical events through Fox Newroll Network (FoxNN).
 
@@ -173,7 +173,7 @@ Make your ideas concise, in a playful tone, while being refreshingly innovative.
 Past issues:
 ${previousTopics.map((s) => '- ' + s).join('\n')}
       `.trim() }
-  ])
+  ], false, 1.05)
 
   const matches = [...text.matchAll(/^\s*(?:[-*]|[0-9]+\.)\s(.+)$/gm)]
     .map((s) => s[1].trim()).filter((s) => s !== '')
@@ -235,7 +235,7 @@ Today's topics:
   let headerDone = false
 
   const frontPageTextChunks = []
-  const frontPageStream = await requestLLM_DeepSeek3([
+  const frontPageStream = await requestLLM_DeepSeek4([
     { role: 'user', content: frontPagePrompt },
   ], true)
   for await (const s of frontPageStream) {
@@ -258,7 +258,7 @@ Today's topics:
 
   const frontPageText = frontPageTextChunks.join('')
 
-  const innerPagesStream = await requestLLM_DeepSeek3([
+  const innerPagesStream = await requestLLM_DeepSeek4([
     { role: 'user', content: frontPagePrompt },
     { role: 'assistant', content: frontPageText },
     { role: 'user', content: `Perfect! Then, please help the foxes finish the report! Start each page with a first-level title; use subtitles along the way if you feel the need. Write textual content only; do not include extra headers, footers, or the page number. Write at least a few paragraphs for each page. Put a horizontal rule (---) after each page except the last one, and avoid it elsewhere. Start at page 2; do not repeat the front page.` },
@@ -292,7 +292,7 @@ Today's topics:
 }
 
 const _generateImage = async (topic) => {
-  const [, text] = await requestLLM_DeepSeek3([
+  const [, text] = await requestLLM_DeepSeek4([
     { role: 'user', content: `
 幻想世界报纸《九尾日报》准备发布新的新闻报道文章，请你根据报道主题制作一张小插图。可适当发挥创意，但请简洁一些，保留主题中的核心元素或人物，清晰明确地描述图像的内容，避免比喻。用英语撰写。谢谢~
 
