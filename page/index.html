@@ -772,8 +772,7 @@ const playNewspaper = async (issueNum) => {
       newspaperAtBottom = true
     }
 
-    chunks.push(decoder.decode(chunk))
-      // `stream: true` is not required, because server splits at codepoint boundaries
+    chunks.push(decoder.decode(chunk, { stream: true }))
     parseNewspaper(issueNum, chunks.join(''))
     if (autoScroll && newspaperAtBottom)
       requestAnimationFrame(() => scene.scrollTo({
