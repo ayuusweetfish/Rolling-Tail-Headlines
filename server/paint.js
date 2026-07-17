@@ -1,5 +1,5 @@
 import { logNetwork } from './db.js'
-import sharp from 'npm:sharp@0.33.5'  // Ignore Deno's warning about NPM lifecycle scripts
+import sharp from 'npm:@img/sharp-wasm32@0.35.3/sharp.node'
 
 // `input`: ArrayBuffer | TypedArray | node:Buffer | string
 // Returns node:Buffer (which extends Uint8Array)

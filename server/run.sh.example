@@ -2,7 +2,13 @@ ENDPOINT_FOXNN=https://paint.fox.ayu.land \
 DENO_CERT=fox_root_ca.pem \
 API_KEY_FOXNN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
 API_KEY_DEEPSEEK=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-deno run -A ${1:-main.js}
+deno run \
+  --allow-read=./fox.db,../page,${DENO_DIR:-$HOME/.deno},/src/build/target/lib/vips-modules-8.18 \
+  --allow-write=./fox.db \
+  --allow-sys=cpus \
+  --allow-env=ENDPOINT_FOXNN,DENO_CERT,API_KEY_FOXNN,API_KEY_DEEPSEEK --ignore-env \
+  --allow-net=0.0.0.0,api.deepseek.com,paint.fox.ayu.land \
+  ${1:-main.js}
 
 # Add to /etc/hosts:
 # xx.xx.xx.xx paint.fox.ayu.land

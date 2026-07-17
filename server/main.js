@@ -1,7 +1,7 @@
 import * as db from './db.js'
 import * as llm from './llm.js'
 
-import { serveFile } from 'jsr:@std/http/file-server'
+import { serveFile } from 'jsr:@std/http@1.1.2/file-server'
 
 import { cut as jiebaCut } from 'npm:jieba-wasm@2.2.0'
 
