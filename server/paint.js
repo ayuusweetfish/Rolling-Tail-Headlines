@@ -1,5 +1,5 @@
 import { logNetwork } from './db.js'
-import sharp from 'npm:@img/sharp-wasm32@0.35.3/sharp.node'
+import sharp from 'npm:sharp@0.35.3'
 
 // `input`: ArrayBuffer | TypedArray | node:Buffer | string
 // Returns node:Buffer (which extends Uint8Array)

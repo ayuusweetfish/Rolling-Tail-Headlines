@@ -3,9 +3,9 @@ DENO_CERT=fox_root_ca.pem \
 API_KEY_FOXNN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
 API_KEY_DEEPSEEK=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
 deno run \
-  --allow-read=./fox.db,../page,${DENO_DIR:-$HOME/.deno},/src/build/target/lib/vips-modules-8.18 \
+  --allow-read=./fox.db,../page,${DENO_DIR:-$HOME/.deno},/proc/self,/usr/bin/ldd \
+  --allow-ffi=${DENO_DIR:-$HOME/.deno} \
   --allow-write=./fox.db \
-  --allow-sys=cpus \
   --allow-env=ENDPOINT_FOXNN,DENO_CERT,API_KEY_FOXNN,API_KEY_DEEPSEEK --ignore-env \
   --allow-net=0.0.0.0,api.deepseek.com,paint.fox.ayu.land \
   ${1:-main.js}
