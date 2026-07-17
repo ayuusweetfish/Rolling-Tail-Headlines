@@ -8,6 +8,7 @@ deno run \
   --allow-write=./fox.db \
   --allow-env=ENDPOINT_FOXNN,API_KEY_FOXNN,API_KEY_DEEPSEEK,CHECK_IMAGES --ignore-env \
   --allow-net=0.0.0.0,api.deepseek.com,paint.fox.ayu.land \
+  --frozen \
   ${1:-main.js}
 
 # Add to /etc/hosts:
