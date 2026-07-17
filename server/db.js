@@ -75,13 +75,13 @@ export const setTopicImage = async (topic_id, image) => {
   stmt(`UPDATE topics SET image = ? WHERE rowid = ?`).run(image, topic_id)
 }
 
-// [native text; 3]
+// [[rowid, native text]; 3]
 export const selectedTopicsForIssue = async (issue_uuid) => {
   const values =
-    stmt(`SELECT text_native FROM topics WHERE issue_uuid = ? AND image IS NOT NULL
+    stmt(`SELECT rowid, text_native FROM topics WHERE issue_uuid = ? AND image IS NOT NULL
           ORDER BY rowid ASC`)
       .all(issue_uuid)
-  return values.map((rowFields) => rowFields['text_native'])
+  return values.map((rowFields) => [rowFields['rowid'], rowFields['text_native']])
 }
 
 // Returns `recent_issues` * 3 + `past_issues` topics (may be less if bootstrapping)
@@ -141,6 +141,14 @@ export const reserveIssueNumber = async (issue_uuid) => {
 export const publishIssue = async (issue_num, pages_content) => {
   stmt(`UPDATE published_issues SET pages_content = ? WHERE issue_num = ?`)
     .run(pages_content, issue_num)
+}
+
+export const publishedIssueUuid = async (issue_num) => {
+  const value =
+    stmt(`SELECT uuid FROM
+          issues JOIN published_issues ON issues.uuid = published_issues.issue_uuid
+          WHERE issue_num = ?`).get(issue_num)
+  return (value ? value['uuid'] : null)
 }
 
 export const publishedIssueLanguage = async (issue_num) => {

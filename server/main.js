@@ -96,6 +96,37 @@ const createIssue = async (language) => {
   return [uuid, trimmedTopics]
 }
 
+const buildImage = async (selTopicId) => {
+  const selTopicText = await db.getTopicEnglishText(selTopicId)
+  try {
+    const image = await llm.generateImage(selTopicText)
+    await db.setTopicImage(selTopicId, image)
+  } catch (e) {
+    console.log(`Cannot create image for issue ${issueUuid}, topic ${selTopicId}`)
+    await db.setTopicImage(selTopicId, '')
+  }
+}
+
+if (Deno.env.get('CHECK_IMAGES')) {
+  console.log(`Checking missing images`)
+  const isRebuild = (Deno.env.get('CHECK_IMAGES') === 'rebuild')
+  for (let issueNum = 1; issueNum <= 127; issueNum++) {
+    const issueUuid = await db.publishedIssueUuid(issueNum)
+    const topics = await db.selectedTopicsForIssue(issueUuid) // [[rowid, native text]; 3]
+    for (let illustNum = 1; illustNum <= 3; illustNum++) {
+      const image = await db.topicImage(issueNum, illustNum - 1)
+      if (!image || image.length <= 1 /* '+' */) {
+        if (isRebuild) {
+          console.log(`Image ${issueNum}, ${illustNum} rebuilding`)
+          await buildImage(topics[illustNum - 1][0])
+        } else {
+          console.log(`Image ${issueNum}, ${illustNum} may need a rebuild`)
+        }
+      }
+    }
+  }
+}
+
 const extractParams = (payload, keys) => {
   const params = []
   for (let key of keys) {
@@ -148,21 +179,12 @@ const serveReq = async (req) => {
     const selTopicId = topics[sel][0]
     await db.markTopicAsSelected(selTopicId)
 
-    // Spawn the image generation task to run in background
-    const selTopicText = await db.getTopicEnglishText(selTopicId)
-    ;(async () => {
-      try {
-        const image = await llm.generateImage(selTopicText)
-        await db.setTopicImage(selTopicId, image)
-      } catch (e) {
-        console.log(`Cannot create image for issue ${issueUuid}, topic ${selTopicId}`)
-        await db.setTopicImage(selTopicId, '')
-      }
-    })()
+    // Spawn the image generation task to run in background (do not await)
+    buildImage(selTopicId)
 
     if (topics.reduce((a, b) => a + b[1], 0) + 1 === 3) {
       // All topics selected. Make the newspaper!
-      const selTopics = await db.selectedTopicsForIssue(issueUuid)
+      const selTopics = await db.selectedTopicsNativeForIssue(issueUuid).map((t) => t[0])
       const issueNum = await db.reserveIssueNumber(issueUuid)
       const language = await db.issueLanguage(issueUuid)
       const newspaperGen = await llm.askForNewspaper(language, issueNum, selTopics)
@@ -258,7 +280,7 @@ const serveReq = async (req) => {
       const issueNum = parseInt(matchIllustDone[1])
       const illustNum = parseInt(matchIllustDone[2])
       const image = await db.topicImage(issueNum, illustNum - 1)
-      return new Response((!image || image === '+') ? '0' : '1')
+      return new Response((!image || image.length <= 1 /* '+' */) ? '0' : '1')
     }
   }
   return new Response('Void space, please return', { status: 404 })

@@ -6,7 +6,7 @@ deno run \
   --allow-read=./fox.db,../page,${DENO_DIR:-$HOME/.deno},/proc/self,/usr/bin/ldd \
   --allow-ffi=${DENO_DIR:-$HOME/.deno} \
   --allow-write=./fox.db \
-  --allow-env=ENDPOINT_FOXNN,DENO_CERT,API_KEY_FOXNN,API_KEY_DEEPSEEK --ignore-env \
+  --allow-env=ENDPOINT_FOXNN,API_KEY_FOXNN,API_KEY_DEEPSEEK,CHECK_IMAGES --ignore-env \
   --allow-net=0.0.0.0,api.deepseek.com,paint.fox.ayu.land \
   ${1:-main.js}
 
