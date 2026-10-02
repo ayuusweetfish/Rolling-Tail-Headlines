@@ -184,7 +184,7 @@ const serveReq = async (req) => {
 
     if (topics.reduce((a, b) => a + b[1], 0) + 1 === 3) {
       // All topics selected. Make the newspaper!
-      const selTopics = await db.selectedTopicsNativeForIssue(issueUuid).map((t) => t[0])
+      const selTopics = (await db.selectedTopicsForIssue(issueUuid)).map((t) => t[0])
       const issueNum = await db.reserveIssueNumber(issueUuid)
       const language = await db.issueLanguage(issueUuid)
       const newspaperGen = await llm.askForNewspaper(language, issueNum, selTopics)
