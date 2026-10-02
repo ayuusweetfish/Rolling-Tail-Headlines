@@ -1,0 +1,2 @@
+export ACCESS_KEY=9bu_Gaosu2
+deno run --allow-net=127.0.0.1,0.0.0.0 --allow-env server.js
