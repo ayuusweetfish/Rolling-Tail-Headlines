@@ -115,7 +115,13 @@ const handler = async (req) => {
 }
 
 const serverPort = +Deno.env.get('SERVE_PORT') || 26220
-Deno.serve({ port: serverPort }, async (req) => {
+const hasTls = !!Deno.env.get('TLS')
+Deno.serve({
+  port: serverPort,
+  cert: hasTls ? await Deno.readTextFile('cert/server.crt') : undefined,
+  key: hasTls ? await Deno.readTextFile('cert/server.key') : undefined,
+  onListen: ({ port }) => log(`Starting! http${hasTls ? 's' : ''}://localhost:${port} ^≥ﻌ-^`)
+}, async (req) => {
   try {
     const obj = await handler(req)
     if (obj instanceof Response) return obj
@@ -129,4 +135,3 @@ Deno.serve({ port: serverPort }, async (req) => {
     return new Response(JSON.stringify({ message }), { status })
   }
 })
-log('Starting! ^≥ﻌ-^')
