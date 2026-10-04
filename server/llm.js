@@ -86,7 +86,7 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (m
 }
 
 const requestLLM_DeepSeek4 = requestLLM_OpenAI(
-  'https://api.deepseek.com/chat/completions', 'deepseek-v4-flash', 0.9,
+  'https://api.deepseek.com/chat/completions', 'deepseek-flash', 0.9,
   Deno.env.get('API_KEY_DEEPSEEK') || prompt('API key (DeepSeek):'),
   { thinking: { type: 'disabled' } }
 )
@@ -205,10 +205,14 @@ export const askForNewspaper = async function* (language, issueNumber, topics) {
     language === 'zh-Hans' ? ' (translation: **狐头狐尾魔法**)' :
     language === 'zh-Hant' ? ' (translation: **狐頭狐尾魔法**)' :
     '')
+  let avoidWords =
+    language === 'zh-Hans' ? '温柔' :
+    language === 'zh-Hant' ? '温柔' :
+    ''
   const frontPagePrompt = `
 In the 22nd century, foxes are the playful super-wizards. They traverse the world on a daily basis, observing, and discovering through a mechanism known as 'heads or tails'${translationHeadsOrTails} (no, it's not coin flipping, just some fox magic outside of the reach of languages). Fox Newroll Network (FoxNN)${translationFoxNN} is a news agent that regularly publishes reports obtained this way.
 
-Please help the foxes finish the issue! Remember that this is a whimsical world, so don't treat them as breaking news, everything is just regular ^ ^ Please make a front page making an introduction to today's issue and then overviewing/outlining the contents (with pointers to the pages). Start with the header given below. Do not add another overall title (e.g. "Front Page: xxx" or "Today's Headlines: xxx"), but subtitles are allowed.
+Please help the foxes finish the issue! Remember that this is a whimsical world, so don't treat them as breaking news, everything is just regular ^ ^ Please make a front page making an introduction to today's issue and then overviewing/outlining the contents (with pointers to the pages). Start with the header given below. Do not add another overall title (e.g. "Front Page: xxx" or "Today's Headlines: xxx"), but subtitles are allowed.${avoidWords.length > 0 ? `\n\nTry to avoid the words: ${avoidWords}` : ''}
 
 Header:
 # **${titleGazette} 🦊**
