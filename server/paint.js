@@ -139,6 +139,7 @@ const paint_FoxNN = paintQueued(async (text) => {
       headers: {
         'Authorization': `Bearer ${key_FoxNN}`,
       },
+      client: client_FoxNN,
     }
   )
   if (statusResponse.status === 'finished') {
@@ -147,6 +148,7 @@ const paint_FoxNN = paintQueued(async (text) => {
         headers: {
           'Authorization': `Bearer ${key_FoxNN}`,
         },
+        client: client_FoxNN,
       }
     )
   } else if (statusResponse.status === 'error') {

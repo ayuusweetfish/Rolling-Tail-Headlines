@@ -97,7 +97,7 @@ const createIssue = async (language) => {
   return [uuid, trimmedTopics]
 }
 
-const buildImage = async (selTopicId) => {
+const buildImage = async (issueUuid, selTopicId) => {
   const selTopicText = await db.getTopicEnglishText(selTopicId)
   try {
     const image = await llm.generateImage(selTopicText)
@@ -119,7 +119,7 @@ if (Deno.env.get('CHECK_IMAGES')) {
       if (!image || image.length <= 1 /* '+' */) {
         if (isRebuild) {
           console.log(`Image ${issueNum}, ${illustNum} rebuilding`)
-          await buildImage(topics[illustNum - 1][0])
+          await buildImage(issueUuid, topics[illustNum - 1][0])
         } else {
           console.log(`Image ${issueNum}, ${illustNum} may need a rebuild`)
         }
@@ -184,7 +184,7 @@ const serveReq = async (req) => {
     await db.markTopicAsSelected(selTopicId)
 
     // Spawn the image generation task to run in background (do not await)
-    buildImage(selTopicId)
+    buildImage(issueUuid, selTopicId)
 
     if (topics.reduce((a, b) => a + b[1], 0) + 1 === 3) {
       // All topics selected. Make the newspaper!
