@@ -1,5 +1,6 @@
 import * as db from './db.js'
 import * as llm from './llm.js'
+import { selfTest as paintSelfTest } from './paint.js'
 
 import { serveFile } from 'jsr:@std/http@1/file-server'
 
@@ -143,6 +144,9 @@ const extractParams = (payload, keys) => {
 // issue number -> { listeners }
 const newspaperStreams = {}
 
+let lastSelfCheckAt = 0
+let lastSelfCheckResult = undefined
+
 const serveReq = async (req) => {
   const url = new URL(req.url)
   if (req.method === 'GET' && url.pathname === '/') {
@@ -282,6 +286,22 @@ const serveReq = async (req) => {
       const image = await db.topicImage(issueNum, illustNum - 1)
       return new Response((!image || image.length <= 1 /* '+' */) ? '0' : '1')
     }
+  }
+  if (req.method === 'POST' && url.pathname === '/self-test') {
+    const ACCESS_KEY = Deno.env.get('ACCESS_KEY')
+    if (req.headers.get('Authorization') !== `Bearer ${ACCESS_KEY}`)
+      throw new ErrorHttpCoded(401, `Incorrect access key`)
+    if (Date.now() < lastSelfCheckAt + 180000)
+      return Response.json(lastSelfCheckResult)
+    const [llmResult, paintResult] =
+      await Promise.all([llm.selfTest(), paintSelfTest()])
+    lastSelfCheckAt = Date.now()
+    lastSelfCheckResult = {
+      ok: llmResult.status === 200 && paintResult.status === 200,
+      llm: llmResult, paint: paintResult,
+      timestamp: lastSelfCheckAt,
+    }
+    return Response.json(lastSelfCheckResult)
   }
   return new Response('Void space, please return', { status: 404 })
 }

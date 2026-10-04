@@ -10,8 +10,12 @@ const loggedFetchJSON = async (url, options) => {
   console.log(url, respText)
   return JSON.parse(respText)
 }
+const fetchJSON = async (url, options) => {
+  const req = await fetch(url, options)
+  return await req.json()
+}
 
-const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (messages, isStreaming, overrideTemp) => {
+const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (messages, isStreaming, overrideTemp, overrideMaxTokens, isLogged) => {
   const options = {
     method: 'POST',
     headers: {
@@ -21,7 +25,7 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (m
     body: JSON.stringify(Object.assign({
       model: model,
       messages,
-      max_tokens: 8000,
+      max_tokens: overrideMaxTokens || 8000,
       temperature: overrideTemp || temperature,
       stream: (isStreaming ? true : undefined),
     }, extra)),
@@ -71,7 +75,7 @@ const requestLLM_OpenAI = (endpoint, model, temperature, key, extra) => async (m
     }
 
   } else {
-    const resp = await loggedFetchJSON(endpoint, options)
+    const resp = await (isLogged === false ? fetchJSON : loggedFetchJSON)(endpoint, options)
     // Extract text
     if (!(resp.choices instanceof Array) ||
         resp.choices.length !== 1 ||
@@ -110,6 +114,18 @@ const retry = (fn, attempts, errorMsgPrefix) => async (...args) => {
       if (i === attempts - 1) throw e
       continue
     }
+  }
+}
+
+export const selfTest = async () => {
+  try {
+    const [_, text] = await requestLLM_DeepSeek4([
+      { role: 'user', content: '' }
+    ], false, 2, /* overrideMaxTokens */ 1, /* isLogged */ false)
+    return { status: 200, message: `Length ${text.length}` }
+  } catch (e) {
+    console.log(e)
+    return { status: 500, message: `Could not reach endpoint: ${e.message}` }
   }
 }
 

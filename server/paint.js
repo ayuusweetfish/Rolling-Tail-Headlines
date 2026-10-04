@@ -180,6 +180,26 @@ export const paint = (text) => new Promise((resolve, reject) => {
   arrange()
 })
 
+export const selfTest = async () => {
+  try {
+    const resp = await fetch(
+      `${endpoint_FoxNN}/self-test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key_FoxNN}`,
+          'Host': 'paint.fox.ayu.land',
+        },
+      }
+    )
+    const tryParse = (s) => { try { return JSON.parse(s) } catch (_) { return s } }
+    return { status: resp.status, message: tryParse(await resp.text()) }
+  } catch (e) {
+    console.log(e)
+    return { status: 500, message: `Could not reach endpoint: ${e.message}` }
+  }
+}
+
 // ======== Test run ======== //
 if (import.meta.main) {
   // await Deno.writeFile('1.webp', await paint('黑白简笔画卡通平涂风格，线条流畅、圆润、简洁，有手绘风格。画面中，一位穿着简单的人类角色，头戴一顶小帽子，身上系着多个小铃铛，正在森林中行走。周围有几只小动物，如兔子、松鼠和小鸟，好奇地围着他。背景为简单的树木和草地轮廓，使用粗线条和大色块，可加入灰色阴影，使整张图简洁、可爱。小尺寸阅览友好。'))
