@@ -4,13 +4,13 @@ const ACCESS_KEY = Deno.env.get('ACCESS_KEY')
 const LOCAL_ENDPOINT = Deno.env.get('LOCAL_ENDPOINT')
   || `http://127.0.0.1:26219/v1/images/generations`
 
-const callLocalGenServer = async (text, seed) => {
+const callLocalGenServer = async (text, seed, size) => {
   const req = await fetch(LOCAL_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      prompt: text,
-      seed,
+      prompt: text + `<sd_cpp_extra_args>{"seed": ${seed}}</sd_cpp_extra_args>`,
+      size: size ? `${size}x${size}` : undefined,
     }),
   })
   const obj = await req.json()
@@ -31,6 +31,15 @@ const handler = async (req) => {
 
   if (ACCESS_KEY && req.headers.get('Authorization') !== `Bearer ${ACCESS_KEY}`)
     throw new Error(`[401] Incorrect access key`)
+
+  if (req.method === 'POST' && url.pathname === '/self-test') {
+    const startedAt = new Date()
+    const imageBuffer = await callLocalGenServer('abstraction', 42, 64)
+    return {
+      status: 'finished',
+      duration: new Date() - startedAt,
+    }
+  }
 
   if (req.method === 'POST' && url.pathname === '/paint') {
     const obj = await req.json()
