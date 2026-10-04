@@ -105,6 +105,16 @@ const paint_Wanx21Turbo = paintQueued(async (text) => {
 
 const endpoint_FoxNN = Deno.env.get('ENDPOINT_FOXNN') || 'http://localhost:26220'
 const key_FoxNN = Deno.env.get('API_KEY_FOXNN') || prompt('API key (FoxNN):')
+const client_FoxNN = await (async () => {
+  const CA_CERT = 'fox_root_ca.pem'
+  let cert
+  try {
+    cert = await Deno.readTextFile(CA_CERT)
+  } catch (_) {
+    console.log(`Cannot read ${CA_CERT}; using no extra CA certificates`)
+  }
+  return Deno.createHttpClient({ caCerts: [ cert ] })
+})()
 const paint_FoxNN = paintQueued(async (text) => {
   const resp = await loggedFetchJSON(
     `${endpoint_FoxNN}/paint`, {
@@ -115,6 +125,7 @@ const paint_FoxNN = paintQueued(async (text) => {
         'Host': 'paint.fox.ayu.land',
       },
       body: JSON.stringify({ prompt: text }),
+      client: client_FoxNN,
     }
   )
   if (!resp.task_id) {
@@ -190,6 +201,7 @@ export const selfTest = async () => {
           'Authorization': `Bearer ${key_FoxNN}`,
           'Host': 'paint.fox.ayu.land',
         },
+        client: client_FoxNN,
       }
     )
     const tryParse = (s) => { try { return JSON.parse(s) } catch (_) { return s } }
