@@ -288,10 +288,9 @@ const serveReq = async (req) => {
     }
   }
   if (req.method === 'POST' && url.pathname === '/self-test') {
-    const ACCESS_KEY = Deno.env.get('ACCESS_KEY')
-    if (req.headers.get('Authorization') !== `Bearer ${ACCESS_KEY}`)
-      throw new ErrorHttpCoded(401, `Incorrect access key`)
-    if (Date.now() < lastSelfCheckAt + 180000)
+    // 30 min, 2 min offset
+    if (Math.floor((Date.now() + 120000) / 1800000) <
+        Math.floor((lastSelfCheckAt + 120000) / 1800000))
       return Response.json(lastSelfCheckResult)
     const [llmResult, paintResult] =
       await Promise.all([llm.selfTest(), paintSelfTest()])

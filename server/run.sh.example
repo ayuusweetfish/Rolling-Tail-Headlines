@@ -1,5 +1,4 @@
 ENDPOINT_FOXNN=https://paint.fox.ayu.land \
-ACCESS_KEY=xtxtqqgqlxxmm \
 API_KEY_FOXNN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
 API_KEY_DEEPSEEK=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
 deno run \
