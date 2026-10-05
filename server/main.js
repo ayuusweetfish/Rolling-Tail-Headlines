@@ -289,7 +289,7 @@ const serveReq = async (req) => {
   }
   if (req.method === 'POST' && url.pathname === '/self-test') {
     // 30 min, 2 min offset
-    if (Math.floor((Date.now() + 120000) / 1800000) <
+    if (Math.floor((Date.now() + 120000) / 1800000) <=
         Math.floor((lastSelfCheckAt + 120000) / 1800000))
       return Response.json(lastSelfCheckResult)
     const [llmResult, paintResult] =
