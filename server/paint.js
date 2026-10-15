@@ -193,9 +193,20 @@ export const paint = (text) => new Promise((resolve, reject) => {
   arrange()
 })
 
+const timeout = (limit, promise) => new Promise((resolve, reject) => {
+  const timer = setTimeout(
+    () => reject(new Error(`timed out after ${limit / 1000} s`)), limit)
+  let settled = false
+  promise.then((result) => {
+    clearTimeout(timer); if (!settled) { settled = true; resolve(result) }
+  }).catch((error) => {
+    clearTimeout(timer); if (!settled) { settled = true; reject(error) }
+  })
+})
+
 export const selfTest = async () => {
   try {
-    const resp = await fetch(
+    const resp = await timeout(30000, fetch(
       `${endpoint_FoxNN}/self-test`, {
         method: 'POST',
         headers: {
@@ -205,7 +216,7 @@ export const selfTest = async () => {
         },
         client: client_FoxNN,
       }
-    )
+    ))
     const tryParse = (s) => { try { return JSON.parse(s) } catch (_) { return s } }
     return { status: resp.status, message: tryParse(await resp.text()) }
   } catch (e) {

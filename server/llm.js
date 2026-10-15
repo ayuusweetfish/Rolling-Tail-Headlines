@@ -117,11 +117,22 @@ const retry = (fn, attempts, errorMsgPrefix) => async (...args) => {
   }
 }
 
+const timeout = (limit, promise) => new Promise((resolve, reject) => {
+  const timer = setTimeout(
+    () => reject(new Error(`timed out after ${limit / 1000} s`)), limit)
+  let settled = false
+  promise.then((result) => {
+    clearTimeout(timer); if (!settled) { settled = true; resolve(result) }
+  }).catch((error) => {
+    clearTimeout(timer); if (!settled) { settled = true; reject(error) }
+  })
+})
+
 export const selfTest = async () => {
   try {
-    const [_, text] = await requestLLM_DeepSeek4([
+    const [_, text] = await timeout(30000, requestLLM_DeepSeek4([
       { role: 'user', content: '' }
-    ], false, 2, /* overrideMaxTokens */ 1, /* isLogged */ false)
+    ], false, 2, /* overrideMaxTokens */ 1, /* isLogged */ false))
     return { status: 200, message: `Length ${text.length}` }
   } catch (e) {
     console.log(e)
