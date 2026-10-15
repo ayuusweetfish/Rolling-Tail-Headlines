@@ -290,8 +290,22 @@ const serveReq = async (req) => {
   if (req.method === 'POST' && url.pathname === '/self-test') {
     // 30 min, 2 min offset
     if (Math.floor((Date.now() + 120000) / 1800000) <=
-        Math.floor((lastSelfCheckAt + 120000) / 1800000))
-      return Response.json(lastSelfCheckResult)
+        Math.floor((lastSelfCheckAt + 120000) / 1800000)) {
+      if (lastSelfCheckResult !== null)
+        return Response.json(lastSelfCheckResult)
+      else
+        return Response.json({
+          in_progress: true,
+          timestamp: lastSelfCheckAt,
+        }, {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil(30 - (Date.now() - lastSelfCheckAt) / 1000),
+          },
+        })
+    }
+    lastSelfCheckAt = Date.now()
+    lastSelfCheckResult = null
     const [llmResult, paintResult] =
       await Promise.all([llm.selfTest(), paintSelfTest()])
     lastSelfCheckAt = Date.now()
